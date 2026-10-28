@@ -2,9 +2,6 @@ import { useState } from 'react'
 import SectionHeading from '../components/SectionHeading'
 import { profile } from '../constants'
 
-const field =
-  'w-full rounded-lg border border-line bg-ink/60 px-4 py-3 text-fg placeholder:text-dim transition-colors focus:border-[color:var(--accent)] focus:outline-none'
-
 const Contact = () => {
   const [sent, setSent] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -24,66 +21,71 @@ const Contact = () => {
     try {
       await navigator.clipboard.writeText(profile.email)
       setCopied(true)
-      setTimeout(() => setCopied(false), 1800)
+      setTimeout(() => setCopied(false), 2200)
     } catch {
       window.location.href = `mailto:${profile.email}`
     }
   }
 
   return (
-    <section id="contact" data-accent="pink" className="relative py-20 sm:py-28">
-      <div className="container-x grid gap-12 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-5">
+    <section id="contact" data-chapter="contact" data-tone="light" data-shot="contact" className="relative">
+      <div className="container-x grid min-h-[135vh] items-center pb-24 pt-[52svh] lg:grid-cols-12 lg:py-32">
+        <div className="panel lg:col-span-6 lg:col-start-7">
           <SectionHeading
-            index="03"
-            eyebrow="Multiplayer"
-            title="Player 2, press start."
-            intro="An internship, a collaboration, a hackathon team, or an idea that needs a second brain: send it over. I read every message."
+            num="04"
+            kicker="Contact"
+            lines={['Let’s build', 'something that', 'survives the demo.']}
+            intro="Internship, collaboration, hackathon team, or a half-formed idea that needs a second brain: send it over. I read everything, even the ones that start with “quick question”."
           />
-          <div className="reveal space-y-3" style={{ '--delay': '80ms' }}>
-            <button type="button" onClick={copyEmail} className="card group flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:border-white/25">
+
+          <div className="reveal grid border-y-2 border-ink sm:grid-cols-2" style={{ '--delay': '80ms' }}>
+            <button
+              type="button"
+              onClick={copyEmail}
+              className="group flex items-center justify-between gap-4 border-b-2 border-ink py-5 text-left sm:border-b-0 sm:border-r-2 sm:pr-6"
+            >
               <span className="min-w-0">
-                <span className="block font-mono text-[11px] uppercase tracking-wider text-dim">Email</span>
-                <span className="block truncate text-fg">{profile.email}</span>
+                <span className="label block text-muted">Email</span>
+                <span className="mt-1.5 block truncate text-lg font-medium">{profile.email}</span>
               </span>
-              <span className="shrink-0 font-mono text-xs uppercase tracking-wider text-accent" aria-live="polite">
+              <span className="label shrink-0 text-accent" aria-live="polite">
                 {copied ? 'Copied ✓' : 'Copy'}
               </span>
             </button>
-            <a href={profile.github} target="_blank" rel="noreferrer" className="card group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:border-white/25">
+            <a href={profile.github} target="_blank" rel="noreferrer" className="group flex items-center justify-between gap-4 py-5 sm:pl-6">
               <span>
-                <span className="block font-mono text-[11px] uppercase tracking-wider text-dim">GitHub</span>
-                <span className="block text-fg">{profile.github.replace('https://', '')}</span>
+                <span className="label block text-muted">GitHub</span>
+                <span className="mt-1.5 block text-lg font-medium">{profile.github.replace('https://', '')}</span>
               </span>
-              <span aria-hidden="true" className="font-mono text-xs text-accent">↗</span>
+              <span aria-hidden="true" className="font-display text-2xl font-extrabold transition-transform group-hover:-translate-y-1 group-hover:translate-x-1">↗</span>
             </a>
           </div>
-        </div>
 
-        <form onSubmit={onSubmit} className="reveal card space-y-4 p-6 sm:p-8 lg:col-span-7 lg:mt-24" style={{ '--delay': '120ms' }}>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <form onSubmit={onSubmit} className="reveal mt-12 space-y-8" style={{ '--delay': '160ms' }}>
+            <div className="grid gap-8 sm:grid-cols-2">
+              <label className="block">
+                <span className="label block text-muted">What do I call you?</span>
+                <input name="name" required autoComplete="name" placeholder="Ada Lovelace" className="field" />
+              </label>
+              <label className="block">
+                <span className="label block text-muted">Where do I reply?</span>
+                <input name="email" type="email" required autoComplete="email" placeholder="ada@engine.dev" className="field" />
+              </label>
+            </div>
             <label className="block">
-              <span className="mb-2 block font-mono text-xs uppercase tracking-wider text-muted">Name</span>
-              <input name="name" required autoComplete="name" placeholder="Ada Lovelace" className={field} />
+              <span className="label block text-muted">What’s the idea?</span>
+              <textarea name="message" required rows={4} placeholder="So, I had this idea…" className="field resize-y" />
             </label>
-            <label className="block">
-              <span className="mb-2 block font-mono text-xs uppercase tracking-wider text-muted">Email</span>
-              <input name="email" type="email" required autoComplete="email" placeholder="ada@engine.dev" className={field} />
-            </label>
-          </div>
-          <label className="block">
-            <span className="mb-2 block font-mono text-xs uppercase tracking-wider text-muted">Message</span>
-            <textarea name="message" required rows={5} placeholder="So I had this idea…" className={`${field} resize-y`} />
-          </label>
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-            <p className="text-sm text-dim" aria-live="polite">
-              {sent ? 'Your mail app should be open with the message ready to send.' : 'Opens your mail app with everything filled in.'}
-            </p>
-            <button type="submit" className="btn-primary">
-              Transmit <span aria-hidden="true">→</span>
-            </button>
-          </div>
-        </form>
+            <div className="flex flex-wrap items-center justify-between gap-5">
+              <p className="max-w-[17rem] text-sm italic text-muted" aria-live="polite">
+                {sent ? 'Your mail app should be open now. Hit send, I’ll take it from there.' : 'Opens your mail app with everything filled in. There’s no server, so nothing gets lost in one.'}
+              </p>
+              <button type="submit" className="btn-solid">
+                Send it <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
   )

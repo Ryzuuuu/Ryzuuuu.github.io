@@ -1,47 +1,19 @@
-import { useEffect, useRef } from 'react'
+import Lines from './Lines'
 
-const GLYPHS = '!<>-_\\/[]{}=+*^?#01'
-
-// Eyebrow label decodes from noise the first time its heading scrolls into view.
-const Scramble = ({ text }) => {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const el = ref.current
-    const host = el?.closest('.reveal')
-    if (!el || !host || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    let frame = 0
-    const run = () => {
-      const start = performance.now()
-      const step = (now) => {
-        const p = Math.min(1, (now - start) / 700)
-        const solved = Math.floor(p * text.length)
-        el.textContent = text
-          .split('')
-          .map((ch, i) => (i < solved || ch === ' ' ? ch : GLYPHS[(Math.random() * GLYPHS.length) | 0]))
-          .join('')
-        if (p < 1) frame = requestAnimationFrame(step)
-      }
-      frame = requestAnimationFrame(step)
-    }
-    host.addEventListener('reveal', run, { once: true })
-    return () => { host.removeEventListener('reveal', run); cancelAnimationFrame(frame) }
-  }, [text])
-
-  return (
-    <span aria-label={text}>
-      <span ref={ref} aria-hidden="true">{text}</span>
-    </span>
-  )
-}
-
-const SectionHeading = ({ index, eyebrow, title, intro }) => (
-  <header className="reveal mb-12 max-w-2xl sm:mb-16">
-    <p className="eyebrow mb-4">
-      <span className="text-dim">{index} /</span> <Scramble text={eyebrow} />
+// "02 — Toolbox" kicker, a big masked headline, and an optional intro paragraph.
+const SectionHeading = ({ num, kicker, lines, intro, id }) => (
+  <header className="mb-12 sm:mb-14">
+    <p data-reveal className="label flex items-center gap-4 text-muted">
+      <span className="text-ink">{num}</span>
+      <span aria-hidden="true" className="rule h-[2px] w-14 bg-ink" />
+      {kicker}
     </p>
-    <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl">{title}</h2>
-    {intro && <p className="mt-5 text-lg leading-relaxed text-muted">{intro}</p>}
+    <Lines id={id} lines={lines} className="display-lg mt-7" delay={80} />
+    {intro && (
+      <p className="reveal lead mt-8 max-w-[34rem] text-muted" style={{ '--delay': '260ms' }}>
+        {intro}
+      </p>
+    )}
   </header>
 )
 

@@ -1,68 +1,77 @@
-import { useEffect, useRef, useState } from 'react'
-import { profile, sections } from '../constants'
-import { useActiveSection } from '../hooks/useActiveSection'
-
-const sectionIds = sections.map((s) => s.id)
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { chapters, profile } from '../constants'
+import { getSnapshot, goTo, lockScroll, subscribe } from '../director'
 
 const Navbar = () => {
-  const active = useActiveSection(sectionIds)
+  const { chapter } = useSyncExternalStore(subscribe, getSnapshot)
   const [scrolled, setScrolled] = useState(false)
-  const progressRef = useRef(null)
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef(null)
+  const buttonRef = useRef(null)
 
-  // Progress bar is written straight to the DOM so scrolling never re-renders React.
   useEffect(() => {
-    let frame = 0
-    const update = () => {
-      frame = 0
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      const p = max > 0 ? window.scrollY / max : 0
-      if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`
-      setScrolled(window.scrollY > 24)
-    }
-    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update) }
-    update()
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      cancelAnimationFrame(frame)
-    }
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Phone menu: freeze the page behind it, focus the first link, close on Escape.
+  useEffect(() => {
+    if (!open) return
+    lockScroll(true)
+    menuRef.current?.querySelector('a')?.focus()
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onKey)
+    const button = buttonRef.current
+    return () => {
+      lockScroll(false)
+      window.removeEventListener('keydown', onKey)
+      button?.focus()
+    }
+  }, [open])
+
+  const jump = (e, id) => {
+    e.preventDefault()
+    setOpen(false)
+    // Let the menu unlock the page before gliding off.
+    requestAnimationFrame(() => goTo(id))
+  }
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled ? 'border-b border-line bg-ink/90' : 'border-b border-transparent'
-      }`}
-    >
-      <div className="container-x flex h-16 items-center justify-between">
-        <a href="#home" className="group flex items-center gap-2.5" aria-label="Back to top">
-          <span className="grid h-9 w-9 place-items-center rounded-lg border border-white/15 bg-white/5 font-mono text-sm font-medium transition-colors group-hover:border-neon-green/60 group-hover:text-neon-green">
-            {profile.initials}
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left bg-pop"
+        style={{ transform: 'scaleX(var(--progress))' }}
+      />
+      <div
+        className={`absolute inset-0 border-b-2 border-ink bg-surface/85 backdrop-blur-md transition-[opacity,transform] duration-500 ${
+          scrolled || open ? 'opacity-100' : '-translate-y-full opacity-0'
+        }`}
+      />
+      <div className="container-x relative flex h-[4.5rem] items-center justify-between">
+        <a href="#home" className="group flex items-baseline gap-3" aria-label={`${profile.name}, back to top`}>
+          <span className="font-display text-[1.6rem] font-extrabold leading-none tracking-[-0.05em] text-ink">
+            {profile.short}
           </span>
-          <span className="hidden font-mono text-xs uppercase tracking-[0.2em] text-muted sm:inline">
-            {profile.name.split(' ')[0]}
-          </span>
+          <span className="label hidden text-muted transition-colors group-hover:text-ink sm:inline">/ portfolio</span>
         </a>
 
-        <nav aria-label="Sections">
-          <ul className="flex items-center gap-1 sm:gap-2">
-            {sections.map(({ id, label, accent }) => {
-              const isActive = active === id
+        <nav aria-label="Chapters" className="hidden lg:block">
+          <ul className="flex items-center gap-1">
+            {chapters.map(({ id, num, label }) => {
+              const active = chapter === id
               return (
-                <li key={id} data-accent={accent}>
+                <li key={id}>
                   <a
                     href={`#${id}`}
-                    aria-current={isActive ? 'true' : undefined}
-                    className={`flex items-center gap-2 rounded-md px-2.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors sm:px-3 ${
-                      isActive ? 'text-accent' : 'text-muted hover:text-fg'
+                    aria-current={active ? 'true' : undefined}
+                    className={`label flex items-center gap-2 border-2 px-3.5 py-2.5 transition-colors ${
+                      active ? 'border-ink bg-ink text-surface' : 'border-transparent text-ink hover:border-ink'
                     }`}
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full transition-all ${isActive ? 'scale-125' : 'opacity-40'}`}
-                      style={{ background: 'var(--accent)' }}
-                    />
+                    <span className={active ? 'text-surface/60' : 'text-muted'}>{num}</span>
                     {label}
                   </a>
                 </li>
@@ -70,12 +79,43 @@ const Navbar = () => {
             })}
           </ul>
         </nav>
+
+        <button
+          ref={buttonRef}
+          type="button"
+          aria-expanded={open}
+          aria-controls="menu"
+          onClick={() => setOpen((o) => !o)}
+          className="label flex items-center gap-3 border-2 border-ink px-4 py-2.5 text-ink lg:hidden"
+        >
+          {open ? 'Close' : 'Menu'}
+        </button>
       </div>
-      <div
-        ref={progressRef}
-        className="absolute inset-x-0 bottom-0 h-0.5 origin-left"
-        style={{ transform: 'scaleX(0)', background: 'linear-gradient(90deg,#3dffa2,#8183ff,#ff5fb1)' }}
-      />
+
+      {open && (
+        <div id="menu" ref={menuRef} className="fixed inset-x-0 bottom-0 top-[4.5rem] z-40 bg-surface lg:hidden">
+          <nav aria-label="Chapters" className="container-x flex h-full flex-col justify-center pb-16">
+            <ul className="space-y-3">
+              {chapters.map(({ id, num, label }) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    onClick={(e) => jump(e, id)}
+                    aria-current={chapter === id ? 'true' : undefined}
+                    className="flex items-baseline gap-4 font-display text-[3.4rem] font-extrabold leading-none tracking-[-0.05em] text-ink"
+                  >
+                    <span className="label text-muted">{num}</span>
+                    {label.toLowerCase()}.
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-12 border-t-2 border-ink pt-6">
+              <a href={`mailto:${profile.email}`} className="link">{profile.email}</a>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }
