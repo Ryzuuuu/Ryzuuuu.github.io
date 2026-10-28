@@ -3,10 +3,11 @@ import Navbar from './components/Navbar'
 import ExhibitCaption from './components/ExhibitCaption'
 import ExhibitLoader from './components/ExhibitLoader'
 import SceneBoundary from './components/SceneBoundary'
+import Tape from './components/Tape'
 import Hero from './sections/Hero'
-import Manifesto from './sections/Manifesto'
+import Process from './sections/Process'
 import About from './sections/About'
-import Expertise from './sections/Expertise'
+import Toolbox from './sections/Toolbox'
 import Work from './sections/Work'
 import Contact from './sections/Contact'
 import Colophon from './sections/Colophon'
@@ -33,12 +34,12 @@ const App = () => {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-ivory focus:px-4 focus:py-2 focus:text-ink"
+        className="label sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-ink focus:px-4 focus:py-3 focus:text-surface"
       >
         Skip to content
       </a>
 
-      {/* The exhibit stays put behind the whole page; the copy scrolls past it. */}
+      {/* The console stays put behind the whole page; the copy scrolls past it. */}
       <div aria-hidden="true" className="stage-glow pointer-events-none fixed inset-0 z-0" />
       {hasWebGL && (
         <SceneBoundary>
@@ -48,19 +49,20 @@ const App = () => {
         </SceneBoundary>
       )}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[1]">
-        <div className="vignette absolute inset-0" />
         <div className="scrim-left absolute inset-0 hidden lg:block" />
         <div className="scrim-right absolute inset-0 hidden lg:block" />
         <div className="scrim-bottom absolute inset-0 lg:hidden" />
       </div>
 
       <Navbar />
-      <main id="main" className="pointer-events-none relative z-10">
+      <main id="main" className="pointer-events-none relative z-10 overflow-x-clip">
         <Hero />
-        <Manifesto />
+        <Tape items={['edge ai', 'computer vision', 'interactive web', 'raspberry pis', 'things that notice']} />
+        <Process />
         <About />
-        <Expertise />
+        <Toolbox />
         <Work />
+        <Tape items={['say hi', 'inbox open', 'no forms were harmed', 'quick questions welcome']} speed={-60} tilt={2} />
         <Contact />
       </main>
       <Colophon />

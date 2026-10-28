@@ -21,78 +21,67 @@ const Contact = () => {
     try {
       await navigator.clipboard.writeText(profile.email)
       setCopied(true)
-      setTimeout(() => setCopied(false), 1800)
+      setTimeout(() => setCopied(false), 2200)
     } catch {
       window.location.href = `mailto:${profile.email}`
     }
   }
 
   return (
-    <section id="contact" data-chapter="contact" data-shot="contact" className="relative">
-      <div className="container-x grid min-h-[130vh] items-center pb-24 pt-[52svh] lg:grid-cols-12 lg:py-32">
-        <div className="panel lg:col-span-6 lg:col-start-7 xl:col-span-5 xl:col-start-8">
+    <section id="contact" data-chapter="contact" data-tone="light" data-shot="contact" className="relative">
+      <div className="container-x grid min-h-[135vh] items-center pb-24 pt-[52svh] lg:grid-cols-12 lg:py-32">
+        <div className="panel lg:col-span-6 lg:col-start-7">
           <SectionHeading
-            numeral="IV"
-            eyebrow="Correspondence"
-            title={
-              <>
-                Let’s build something <em>worth keeping.</em>
-              </>
-            }
-            intro="An internship, a collaboration, a hackathon team, or an idea that needs a second brain: send it over. I read every message."
+            num="04"
+            kicker="Contact"
+            lines={['Let’s build', 'something that', 'survives the demo.']}
+            intro="Internship, collaboration, hackathon team, or a half-formed idea that needs a second brain: send it over. I read everything, even the ones that start with “quick question”."
           />
 
-          <div className="reveal grid border-y border-hairline sm:grid-cols-2" style={{ '--delay': '80ms' }}>
+          <div className="reveal grid border-y-2 border-ink sm:grid-cols-2" style={{ '--delay': '80ms' }}>
             <button
               type="button"
               onClick={copyEmail}
-              className="group flex items-center justify-between gap-4 border-b border-hairline py-5 text-left sm:border-b-0 sm:border-r sm:pr-6"
+              className="group flex items-center justify-between gap-4 border-b-2 border-ink py-5 text-left sm:border-b-0 sm:border-r-2 sm:pr-6"
             >
               <span className="min-w-0">
-                <span className="smallcaps block text-[10px] text-stone">Email</span>
-                <span className="mt-1 block truncate text-ivory transition-colors group-hover:text-gold-light">{profile.email}</span>
+                <span className="label block text-muted">Email</span>
+                <span className="mt-1.5 block truncate text-lg font-medium">{profile.email}</span>
               </span>
-              <span className="smallcaps shrink-0 text-[10px] text-gold" aria-live="polite">
-                {copied ? 'Copied' : 'Copy'}
+              <span className="label shrink-0 text-accent" aria-live="polite">
+                {copied ? 'Copied ✓' : 'Copy'}
               </span>
             </button>
-            <a
-              href={profile.github}
-              target="_blank"
-              rel="noreferrer"
-              className="group flex items-center justify-between gap-4 py-5 sm:pl-6"
-            >
+            <a href={profile.github} target="_blank" rel="noreferrer" className="group flex items-center justify-between gap-4 py-5 sm:pl-6">
               <span>
-                <span className="smallcaps block text-[10px] text-stone">GitHub</span>
-                <span className="mt-1 block text-ivory transition-colors group-hover:text-gold-light">
-                  {profile.github.replace('https://', '')}
-                </span>
+                <span className="label block text-muted">GitHub</span>
+                <span className="mt-1.5 block text-lg font-medium">{profile.github.replace('https://', '')}</span>
               </span>
-              <span aria-hidden="true" className="text-gold">↗</span>
+              <span aria-hidden="true" className="font-display text-2xl font-extrabold transition-transform group-hover:-translate-y-1 group-hover:translate-x-1">↗</span>
             </a>
           </div>
 
-          <form onSubmit={onSubmit} className="reveal mt-10 space-y-7" style={{ '--delay': '160ms' }}>
-            <div className="grid gap-7 sm:grid-cols-2">
+          <form onSubmit={onSubmit} className="reveal mt-12 space-y-8" style={{ '--delay': '160ms' }}>
+            <div className="grid gap-8 sm:grid-cols-2">
               <label className="block">
-                <span className="smallcaps block text-[10px] text-stone">Name</span>
+                <span className="label block text-muted">What do I call you?</span>
                 <input name="name" required autoComplete="name" placeholder="Ada Lovelace" className="field" />
               </label>
               <label className="block">
-                <span className="smallcaps block text-[10px] text-stone">Email</span>
+                <span className="label block text-muted">Where do I reply?</span>
                 <input name="email" type="email" required autoComplete="email" placeholder="ada@engine.dev" className="field" />
               </label>
             </div>
             <label className="block">
-              <span className="smallcaps block text-[10px] text-stone">Message</span>
-              <textarea name="message" required rows={4} placeholder="So I had this idea…" className="field resize-y" />
+              <span className="label block text-muted">What’s the idea?</span>
+              <textarea name="message" required rows={4} placeholder="So, I had this idea…" className="field resize-y" />
             </label>
-            <div className="flex flex-wrap items-center justify-between gap-5 pt-1">
-              <p className="max-w-[16rem] text-sm text-stone" aria-live="polite">
-                {sent ? 'Your mail app should now be open with the letter ready to send.' : 'Opens your mail app with everything filled in.'}
+            <div className="flex flex-wrap items-center justify-between gap-5">
+              <p className="max-w-[17rem] text-sm italic text-muted" aria-live="polite">
+                {sent ? 'Your mail app should be open now. Hit send, I’ll take it from there.' : 'Opens your mail app with everything filled in. There’s no server, so nothing gets lost in one.'}
               </p>
-              <button type="submit" className="btn-gold">
-                Send letter <span aria-hidden="true">→</span>
+              <button type="submit" className="btn-solid">
+                Send it <span aria-hidden="true">→</span>
               </button>
             </div>
           </form>

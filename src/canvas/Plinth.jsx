@@ -1,51 +1,60 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { getSnapshot } from '../director'
+import { linear } from '../palette'
 
-const GOLD = '#c9a45c'
 const RADIUS = 5.2
+const color = (name) => new THREE.Color().setRGB(...linear(name), THREE.LinearSRGBColorSpace)
 
-// Soft pool of warm light under the island, so it reads as floating rather than cut out.
-const makeGlow = () => {
+const makeFalloff = () => {
   const c = document.createElement('canvas')
   c.width = c.height = 256
   const ctx = c.getContext('2d')
   const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
-  g.addColorStop(0, 'rgba(214,160,90,0.42)')
-  g.addColorStop(0.45, 'rgba(160,90,60,0.14)')
-  g.addColorStop(1, 'rgba(0,0,0,0)')
+  g.addColorStop(0, 'rgba(255,255,255,0.55)')
+  g.addColorStop(0.5, 'rgba(255,255,255,0.18)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 256, 256)
-  const tex = new THREE.CanvasTexture(c)
-  tex.colorSpace = THREE.SRGBColorSpace
-  return tex
+  return new THREE.CanvasTexture(c)
 }
 
-// A lacquered display plinth with a gold band and an inlaid ring: the island the exhibit stands on.
+// The island: a deep-teal slab with a bright lip and a wine-red inlay. Underneath, a soft
+// pool that reads as a shadow on light chapters and as a glow on dark ones.
 const Plinth = () => {
-  const glow = useMemo(() => makeGlow(), [])
-  useEffect(() => () => glow.dispose(), [glow])
+  const falloff = useMemo(() => makeFalloff(), [])
+  const pool = useRef()
+  const tones = useMemo(() => ({ light: color('text'), dark: color('primary') }), [])
+  const paint = useMemo(() => ({ slab: color('primary'), lip: color('highlight'), inlay: color('secondary') }), [])
+  useEffect(() => () => falloff.dispose(), [falloff])
+
+  useFrame((_, delta) => {
+    const m = pool.current
+    if (!m) return
+    const dt = Math.min(delta, 0.1)
+    const dark = getSnapshot().tone === 'dark'
+    m.color.lerp(dark ? tones.dark : tones.light, 1 - Math.exp(-3 * dt))
+    m.opacity = THREE.MathUtils.damp(m.opacity, dark ? 0.9 : 0.35, 3, dt)
+  })
 
   return (
     <group>
-      <mesh position={[0, -0.2, 0]}>
-        <cylinderGeometry args={[RADIUS, RADIUS - 0.18, 0.4, 128]} />
-        <meshStandardMaterial color="#1a1612" roughness={0.8} metalness={0.1} envMapIntensity={0.3} />
+      <mesh position={[0, -0.24, 0]}>
+        <cylinderGeometry args={[RADIUS, RADIUS, 0.48, 128]} />
+        <meshStandardMaterial color={paint.slab} roughness={0.75} metalness={0.05} envMapIntensity={0.4} />
       </mesh>
-      <mesh position={[0, -0.03, 0]}>
-        <cylinderGeometry args={[RADIUS + 0.012, RADIUS + 0.012, 0.05, 128, 1, true]} />
-        <meshStandardMaterial color={GOLD} metalness={1} roughness={0.25} />
-      </mesh>
-      <mesh position={[0, -0.37, 0]}>
-        <cylinderGeometry args={[RADIUS - 0.16, RADIUS - 0.16, 0.025, 128, 1, true]} />
-        <meshStandardMaterial color={GOLD} metalness={1} roughness={0.3} />
+      <mesh position={[0, -0.012, 0]}>
+        <cylinderGeometry args={[RADIUS + 0.014, RADIUS + 0.014, 0.03, 128, 1, true]} />
+        <meshBasicMaterial color={paint.lip} toneMapped={false} />
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 0]}>
-        <ringGeometry args={[RADIUS - 0.32, RADIUS - 0.3, 192]} />
-        <meshBasicMaterial color={GOLD} transparent opacity={0.5} toneMapped={false} />
+        <ringGeometry args={[RADIUS - 0.36, RADIUS - 0.3, 192]} />
+        <meshBasicMaterial color={paint.inlay} toneMapped={false} />
       </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[0, -1.1, 0]}>
-        <planeGeometry args={[20, 20]} />
-        <meshBasicMaterial map={glow} transparent depthWrite={false} toneMapped={false} />
+      <mesh rotation-x={-Math.PI / 2} position={[0, -1.3, 0]}>
+        <planeGeometry args={[19, 19]} />
+        <meshBasicMaterial ref={pool} map={falloff} color={tones.light} transparent opacity={0.35} depthWrite={false} toneMapped={false} />
       </mesh>
     </group>
   )

@@ -2,9 +2,9 @@
 // Kept free of three.js imports so the page can read it without loading the 3D chunk.
 export const TARGETS = {
   about: { label: 'The monitor', nodes: ['Lumen_Monitor_0'] },
-  expertise: { label: 'The console', nodes: ['Lumen_Video_Game_System_21'] },
+  toolbox: { label: 'The console', nodes: ['Lumen_Video_Game_System_21'] },
   work: { label: 'The controllers', nodes: ['gamepad_1_15', 'gamepad_2_16'] },
-  contact: { label: 'The receiver', nodes: ['Lumen_TV_35'] },
+  contact: { label: 'The antenna', nodes: ['Lumen_TV_35'] },
 }
 
 // Drag-to-orbit state, shared by the pointer handlers and the camera rig.

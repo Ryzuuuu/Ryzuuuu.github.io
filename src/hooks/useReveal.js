@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 
-// One shared observer fades `.reveal` elements in the first time they enter the viewport.
+// One shared observer marks `.reveal` / `[data-reveal]` elements visible the first time they
+// enter the viewport; CSS does the actual animating.
 export const useReveal = () => {
   useEffect(() => {
-    const els = document.querySelectorAll('.reveal')
+    const els = document.querySelectorAll('.reveal, [data-reveal]')
     if (!('IntersectionObserver' in window)) {
       els.forEach((el) => el.classList.add('is-visible'))
       return
@@ -13,11 +14,10 @@ export const useReveal = () => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue
           entry.target.classList.add('is-visible')
-          entry.target.dispatchEvent(new Event('reveal'))
           io.unobserve(entry.target)
         }
       },
-      { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
+      { rootMargin: '0px 0px -12% 0px', threshold: 0.12 },
     )
     els.forEach((el) => io.observe(el))
     return () => io.disconnect()

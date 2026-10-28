@@ -49,10 +49,12 @@ const CameraRig = () => {
       if (idle > 2.5) orbit.offset = damp(orbit.offset, 0, 1.2, dt)
     }
 
+    // Scrolling hard pulls the camera back and swings it a touch, so speed reads as momentum.
+    const kick = reducedMotion ? 0 : THREE.MathUtils.clamp(director.velocity, -40, 40)
     const sway = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 0.18) * 2.5
-    const az = sa.az + wrap(sb.az - sa.az) * m + orbit.offset + sway + (reducedMotion ? 0 : pointer.x * 3)
+    const az = sa.az + wrap(sb.az - sa.az) * m + orbit.offset + sway + kick * 0.08 + (reducedMotion ? 0 : pointer.x * 3)
     const el = lerp(sa.el, sb.el, m) + (reducedMotion ? 0 : pointer.y * 1.5)
-    const dist = lerp(sa.dist, sb.dist, m) * scale
+    const dist = lerp(sa.dist, sb.dist, m) * scale * (1 + Math.abs(kick) * 0.0035)
     const fx = lerp(sa.fx, sb.fx, m)
     const fy = lerp(sa.fy, sb.fy, m)
 

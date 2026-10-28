@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { chapters, profile } from '../constants'
-import { getSnapshot, subscribe } from '../director'
-
-const Monogram = () => (
-  <span className="grid h-10 w-10 place-items-center rounded-full border border-gold/50 font-display text-lg italic text-gold-light transition-colors group-hover:border-gold">
-    {profile.initials}
-  </span>
-)
+import { getSnapshot, goTo, lockScroll, subscribe } from '../director'
 
 const Navbar = () => {
   const { chapter } = useSyncExternalStore(subscribe, getSnapshot)
@@ -22,56 +16,63 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Phone menu: lock the page behind it, focus the first link, close on Escape.
+  // Phone menu: freeze the page behind it, focus the first link, close on Escape.
   useEffect(() => {
     if (!open) return
-    const root = document.documentElement
-    root.style.overflow = 'hidden'
+    lockScroll(true)
     menuRef.current?.querySelector('a')?.focus()
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('keydown', onKey)
     const button = buttonRef.current
     return () => {
-      root.style.overflow = ''
+      lockScroll(false)
       window.removeEventListener('keydown', onKey)
       button?.focus()
     }
   }, [open])
 
+  const jump = (e, id) => {
+    e.preventDefault()
+    setOpen(false)
+    // Let the menu unlock the page before gliding off.
+    requestAnimationFrame(() => goTo(id))
+  }
+
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div
-        className={`absolute inset-0 border-b border-hairline bg-ink/75 backdrop-blur-md transition-opacity duration-500 ${
-          scrolled || open ? 'opacity-100' : 'opacity-0'
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left bg-pop"
+        style={{ transform: 'scaleX(var(--progress))' }}
+      />
+      <div
+        className={`absolute inset-0 border-b-2 border-ink bg-surface/85 backdrop-blur-md transition-[opacity,transform] duration-500 ${
+          scrolled || open ? 'opacity-100' : '-translate-y-full opacity-0'
         }`}
       />
-      <div className="container-x relative flex h-20 items-center justify-between">
-        <a href="#home" className="group flex items-center gap-3.5" aria-label={`${profile.name}, back to top`} onClick={() => setOpen(false)}>
-          <Monogram />
-          <span className="hidden font-display text-xl text-ivory sm:block">{profile.name}</span>
+      <div className="container-x relative flex h-[4.5rem] items-center justify-between">
+        <a href="#home" className="group flex items-baseline gap-3" aria-label={`${profile.name}, back to top`}>
+          <span className="font-display text-[1.6rem] font-extrabold leading-none tracking-[-0.05em] text-ink">
+            {profile.short}
+          </span>
+          <span className="label hidden text-muted transition-colors group-hover:text-ink sm:inline">/ portfolio</span>
         </a>
 
         <nav aria-label="Chapters" className="hidden lg:block">
-          <ul className="flex items-center gap-9">
-            {chapters.map(({ id, numeral, label }) => {
+          <ul className="flex items-center gap-1">
+            {chapters.map(({ id, num, label }) => {
               const active = chapter === id
               return (
                 <li key={id}>
                   <a
                     href={`#${id}`}
                     aria-current={active ? 'true' : undefined}
-                    className={`smallcaps group relative flex items-baseline gap-2.5 py-2 transition-colors ${
-                      active ? 'text-ivory' : 'text-stone hover:text-ivory'
+                    className={`label flex items-center gap-2 border-2 px-3.5 py-2.5 transition-colors ${
+                      active ? 'border-ink bg-ink text-surface' : 'border-transparent text-ink hover:border-ink'
                     }`}
                   >
-                    <span className="numeral text-base">{numeral}</span>
+                    <span className={active ? 'text-surface/60' : 'text-muted'}>{num}</span>
                     {label}
-                    <span
-                      aria-hidden="true"
-                      className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-gold transition-transform duration-500 ${
-                        active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                      }`}
-                    />
                   </a>
                 </li>
               )
@@ -85,42 +86,32 @@ const Navbar = () => {
           aria-expanded={open}
           aria-controls="menu"
           onClick={() => setOpen((o) => !o)}
-          className="smallcaps flex items-center gap-3 py-3 text-ivory lg:hidden"
+          className="label flex items-center gap-3 border-2 border-ink px-4 py-2.5 text-ink lg:hidden"
         >
           {open ? 'Close' : 'Menu'}
-          <span aria-hidden="true" className="relative block h-3 w-6">
-            <span className={`absolute left-0 h-px w-6 bg-gold transition-transform duration-300 ${open ? 'top-1.5 rotate-45' : 'top-0.5'}`} />
-            <span className={`absolute left-0 h-px w-6 bg-gold transition-transform duration-300 ${open ? 'top-1.5 -rotate-45' : 'top-2.5'}`} />
-          </span>
         </button>
       </div>
 
-      <div
-        aria-hidden="true"
-        className="absolute bottom-0 left-0 h-px w-full origin-left bg-gold/70"
-        style={{ transform: 'scaleX(var(--progress))' }}
-      />
-
       {open && (
-        <div id="menu" ref={menuRef} className="fixed inset-x-0 bottom-0 top-20 z-40 bg-ink/95 backdrop-blur-md lg:hidden">
-          <nav aria-label="Chapters" className="container-x flex h-full flex-col justify-center pb-20">
-            <ul className="space-y-7">
-              {chapters.map(({ id, numeral, title }) => (
+        <div id="menu" ref={menuRef} className="fixed inset-x-0 bottom-0 top-[4.5rem] z-40 bg-surface lg:hidden">
+          <nav aria-label="Chapters" className="container-x flex h-full flex-col justify-center pb-16">
+            <ul className="space-y-3">
+              {chapters.map(({ id, num, label }) => (
                 <li key={id}>
                   <a
                     href={`#${id}`}
-                    onClick={() => setOpen(false)}
+                    onClick={(e) => jump(e, id)}
                     aria-current={chapter === id ? 'true' : undefined}
-                    className="flex items-baseline gap-5 font-display text-[2.6rem] leading-none text-ivory"
+                    className="flex items-baseline gap-4 font-display text-[3.4rem] font-extrabold leading-none tracking-[-0.05em] text-ink"
                   >
-                    <span className="numeral w-10 text-2xl">{numeral}</span>
-                    {title}
+                    <span className="label text-muted">{num}</span>
+                    {label.toLowerCase()}.
                   </a>
                 </li>
               ))}
             </ul>
-            <div className="mt-14 border-t border-hairline pt-6">
-              <a href={`mailto:${profile.email}`} className="smallcaps text-gold">{profile.email}</a>
+            <div className="mt-12 border-t-2 border-ink pt-6">
+              <a href={`mailto:${profile.email}`} className="link">{profile.email}</a>
             </div>
           </nav>
         </div>
