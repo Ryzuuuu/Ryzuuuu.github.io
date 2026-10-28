@@ -1,38 +1,81 @@
-import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { profile, sections } from '../constants'
+import { useActiveSection } from '../hooks/useActiveSection'
+
+const sectionIds = sections.map((s) => s.id)
 
 const Navbar = () => {
+  const active = useActiveSection(sectionIds)
+  const [scrolled, setScrolled] = useState(false)
+  const progressRef = useRef(null)
+
+  // Progress bar is written straight to the DOM so scrolling never re-renders React.
+  useEffect(() => {
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      const p = max > 0 ? window.scrollY / max : 0
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`
+      setScrolled(window.scrollY > 24)
+    }
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      cancelAnimationFrame(frame)
+    }
+  }, [])
+
   return (
-    <header className="fixed top-0 left-0 right-0 flex justify-between items-center px-8 py-4 z-50"
-      style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%)' }}>
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
+        scrolled ? 'border-b border-line bg-ink/90' : 'border-b border-transparent'
+      }`}
+    >
+      <div className="container-x flex h-16 items-center justify-between">
+        <a href="#home" className="group flex items-center gap-2.5" aria-label="Back to top">
+          <span className="grid h-9 w-9 place-items-center rounded-lg border border-white/15 bg-white/5 font-mono text-sm font-medium transition-colors group-hover:border-neon-green/60 group-hover:text-neon-green">
+            {profile.initials}
+          </span>
+          <span className="hidden font-mono text-xs uppercase tracking-[0.2em] text-muted sm:inline">
+            {profile.name.split(' ')[0]}
+          </span>
+        </a>
 
-      {/* Logo */}
-      <NavLink to="/" className="w-10 h-10 rounded-lg bg-white flex items-center justify-center font-bold shadow-md hover:scale-110 transition-transform">
-        <p className="blue-text-gradient font-mono text-sm">NM</p>
-      </NavLink>
-
-      {/* Nav links — retro pixel style */}
-      <nav className="flex text-sm gap-7 font-mono tracking-widest uppercase">
-        {[
-          { to: '/about', label: 'About' },
-          { to: '/projects', label: 'Projects' },
-          { to: '/contact', label: 'Contact' },
-        ].map(({ to, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              isActive
-                ? 'text-green-400 drop-shadow-[0_0_6px_#00ff88]'
-                : 'text-gray-400 hover:text-white hover:drop-shadow-[0_0_6px_#ffffff] transition-all duration-200'
-            }
-          >
-            {({ isActive }) => (
-              <span>{isActive ? '> ' : ''}{label}</span>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+        <nav aria-label="Sections">
+          <ul className="flex items-center gap-1 sm:gap-2">
+            {sections.map(({ id, label, accent }) => {
+              const isActive = active === id
+              return (
+                <li key={id} data-accent={accent}>
+                  <a
+                    href={`#${id}`}
+                    aria-current={isActive ? 'true' : undefined}
+                    className={`flex items-center gap-2 rounded-md px-2.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors sm:px-3 ${
+                      isActive ? 'text-accent' : 'text-muted hover:text-fg'
+                    }`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full transition-all ${isActive ? 'scale-125' : 'opacity-40'}`}
+                      style={{ background: 'var(--accent)' }}
+                    />
+                    {label}
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      </div>
+      <div
+        ref={progressRef}
+        className="absolute inset-x-0 bottom-0 h-0.5 origin-left"
+        style={{ transform: 'scaleX(0)', background: 'linear-gradient(90deg,#3dffa2,#8183ff,#ff5fb1)' }}
+      />
     </header>
   )
 }

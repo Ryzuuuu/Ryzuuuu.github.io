@@ -1,21 +1,28 @@
-import React from 'react';
-import {Route, BrowserRouter as Router, Routes} from 'react-router-dom';
-import Navbar from './components/Navbar';
-import {Home, About, Projects, Contact} from './pages';
+import Navbar from './components/Navbar'
+import Hero from './sections/Hero'
+import About from './sections/About'
+import Projects from './sections/Projects'
+import Contact from './sections/Contact'
+import Footer from './sections/Footer'
+import { useReveal } from './hooks/useReveal'
 
 const App = () => {
+  useReveal()
+
   return (
-    <Router>
-      <main className="bg-slate-300/20 min-h-screen">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/contact" element={<Contact />} />
-        </Routes>
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-fg focus:px-3 focus:py-2 focus:text-ink">
+        Skip to content
+      </a>
+      <Navbar />
+      <main id="main">
+        <Hero />
+        <About />
+        <Projects />
+        <Contact />
       </main>
-    </Router>
+      <Footer />
+    </>
   )
 }
 
