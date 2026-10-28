@@ -2,77 +2,150 @@
 @tailwind components;
 @tailwind utilities;
 
+/* `--fx`, `--fy` (where the exhibit sits on screen, 0–1) and `--progress` are written by
+   the scroll director, so these layers follow the camera without React re-rendering. */
+:root {
+  --fx: 0.68;
+  --fy: 0.5;
+  --progress: 0;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 4.5rem;
+    scroll-padding-top: 5rem;
     color-scheme: dark;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-ink font-sans text-fg antialiased;
+    @apply bg-ink font-sans font-light text-parchment antialiased;
     overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3 {
+    @apply font-display font-medium text-ivory;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em, h2 em, h3 em {
+    @apply font-normal text-gold-light;
   }
 
   ::selection {
-    background: rgb(61 255 162 / 0.3);
+    background: rgb(201 164 92 / 0.35);
     color: #fff;
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent, #3dffa2);
-    outline-offset: 3px;
-    border-radius: 6px;
+    outline: 1px solid #c9a45c;
+    outline-offset: 4px;
   }
-
-  [data-accent='green'] { --accent: #3dffa2; --accent-rgb: 61 255 162; }
-  [data-accent='blue']  { --accent: #8183ff; --accent-rgb: 129 131 255; }
-  [data-accent='pink']  { --accent: #ff5fb1; --accent-rgb: 255 95 177; }
 }
 
 @layer components {
   .container-x {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-8;
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+
+  /* Letterspaced small capitals for labels, captions and buttons. */
+  .smallcaps {
+    @apply font-sans text-[11px] font-medium uppercase tracking-[0.26em];
   }
 
   .eyebrow {
-    @apply font-mono text-xs uppercase tracking-[0.25em];
-    color: var(--accent);
+    @apply smallcaps flex items-center gap-4 text-gold;
   }
 
-  .chip {
-    @apply rounded-md border border-line bg-white/[0.03] px-2.5 py-1 font-mono text-xs text-muted;
+  .numeral {
+    @apply font-display text-xl font-normal normal-case italic tracking-normal text-gold-light;
+  }
+
+  .prose-body {
+    @apply text-[1.0625rem] leading-[1.8] text-parchment sm:text-lg;
   }
 
   .btn {
-    @apply inline-flex items-center gap-2 rounded-lg px-5 py-3 font-mono text-sm font-medium uppercase tracking-wider transition-[transform,background-color,color,box-shadow] duration-200;
+    @apply smallcaps inline-flex items-center justify-center gap-3 px-7 py-4 transition-[background-color,color,border-color,transform] duration-300;
   }
   .btn:active { transform: translateY(1px); }
 
-  .btn-primary {
-    @apply btn text-ink;
-    background: var(--accent);
-    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0);
-  }
-  .btn-primary:hover { box-shadow: 0 0 32px -4px rgb(var(--accent-rgb) / 0.7); }
-
-  .btn-ghost {
-    @apply btn border border-white/15 text-fg hover:border-white/40 hover:bg-white/5;
+  .btn-gold {
+    @apply btn bg-gold text-ink hover:bg-gold-light;
   }
 
-  .card {
-    @apply rounded-2xl border border-line bg-panel/80;
+  .btn-line {
+    @apply btn border border-gold/40 text-ivory hover:border-gold hover:bg-gold/10;
   }
 
-  .text-accent { color: var(--accent); }
+  /* Gold underline that draws in from the left. */
+  .link-gold {
+    @apply smallcaps inline-flex items-center gap-3 text-gold-light;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    padding-bottom: 6px;
+    transition: background-size 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .link-gold:hover, .link-gold:focus-visible { background-size: 100% 1px; }
+
+  /* Copy sits in a tinted panel on phones, where it scrolls over the exhibit;
+     on desktop the exhibit moves aside and the panel dissolves. */
+  .panel {
+    @apply pointer-events-auto border border-hairline bg-ink/80 p-6 backdrop-blur-md sm:p-8 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none;
+  }
+
+  .field {
+    @apply w-full border-0 border-b border-hairline bg-transparent px-0 py-3 font-sans text-base font-normal text-ivory transition-colors placeholder:text-stone/70 focus:border-gold focus:outline-none focus:ring-0;
+  }
 }
 
-/* ── Scroll reveal ─────────────────────────────────────────────────────────── */
+/* ── Atmosphere ──────────────────────────────────────────────────────────────── */
+
+/* Warm pool of light that tracks the exhibit across the page. */
+.stage-glow {
+  background:
+    radial-gradient(42% 55% at calc(var(--fx) * 100%) calc(var(--fy) * 100%), rgb(201 164 92 / 0.13), transparent 70%),
+    radial-gradient(90% 70% at 50% 120%, rgb(125 38 51 / 0.18), transparent 70%);
+}
+
+.vignette {
+  background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgb(0 0 0 / 0.55) 100%);
+}
+
+/* Darkens whichever side the copy is on. Fades out as the exhibit is centred. */
+.scrim-left,
+.scrim-right {
+  transition: opacity 0.2s linear;
+}
+.scrim-left {
+  background: linear-gradient(90deg, rgb(14 12 10 / 0.88) 0%, rgb(14 12 10 / 0.6) 38%, transparent 62%);
+  opacity: clamp(0, calc((var(--fx) - 0.53) * 7), 1);
+}
+.scrim-right {
+  background: linear-gradient(270deg, rgb(14 12 10 / 0.88) 0%, rgb(14 12 10 / 0.6) 38%, transparent 62%);
+  opacity: clamp(0, calc((0.47 - var(--fx)) * 7), 1);
+}
+
+/* Phones: the exhibit lives in the top half, copy scrolls up over the bottom half. */
+.scrim-bottom {
+  background: linear-gradient(180deg, transparent 52%, rgb(14 12 10 / 0.75) 80%, rgb(14 12 10 / 0.92) 100%);
+}
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+}
+
+.text-halo {
+  text-shadow: 0 2px 30px rgb(14 12 10 / 0.9), 0 0 2px rgb(14 12 10 / 0.6);
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────────── */
+
 .reveal {
   opacity: 0;
-  transform: translate3d(0, 24px, 0);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: translate3d(0, 22px, 0);
+  transition: opacity 1.1s cubic-bezier(0.2, 0.7, 0.2, 1), transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
   transition-delay: var(--delay, 0ms);
 }
 .reveal.is-visible {
@@ -80,53 +153,31 @@
   transform: none;
 }
 
-/* ── Hero ──────────────────────────────────────────────────────────────────── */
-.hero-glow {
-  background:
-    radial-gradient(60% 50% at 70% 40%, rgb(129 131 255 / 0.16), transparent 70%),
-    radial-gradient(40% 40% at 20% 80%, rgb(61 255 162 / 0.08), transparent 70%);
+/* Hairlines in headings draw themselves in once revealed. */
+.reveal .rule {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.25s;
 }
+.reveal.is-visible .rule { transform: none; }
 
-.scanlines {
-  background: repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 0.18) 3px 4px);
+@keyframes fade-swap {
+  from { opacity: 0; transform: translate3d(0, 6px, 0); }
+  to { opacity: 1; transform: none; }
 }
+.fade-swap { animation: fade-swap 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
-.caret::after {
-  content: '';
-  display: inline-block;
-  width: 0.55em;
-  height: 1.1em;
-  margin-left: 2px;
-  vertical-align: -0.2em;
-  background: currentColor;
-  animation: blink 1s steps(1) infinite;
+@keyframes scroll-cue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
 }
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-.gradient-text {
-  background: linear-gradient(90deg, #3dffa2, #8183ff 55%, #ff5fb1);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* ── Project cards ─────────────────────────────────────────────────────────── */
-.cartridge {
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-}
-.cartridge:hover {
-  transform: translate3d(0, -4px, 0);
-  border-color: rgb(var(--accent-rgb) / 0.5);
-  box-shadow: 0 20px 50px -20px rgb(var(--accent-rgb) / 0.45);
-}
+.scroll-cue { animation: scroll-cue 2.4s cubic-bezier(0.6, 0, 0.3, 1) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal { opacity: 1; transform: none; transition: none; }
-  .caret::after { animation: none; }
+  .reveal, .reveal .rule { opacity: 1; transform: none; transition: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

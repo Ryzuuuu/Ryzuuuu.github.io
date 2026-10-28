@@ -1,81 +1,130 @@
-import { useEffect, useRef, useState } from 'react'
-import { profile, sections } from '../constants'
-import { useActiveSection } from '../hooks/useActiveSection'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { chapters, profile } from '../constants'
+import { getSnapshot, subscribe } from '../director'
 
-const sectionIds = sections.map((s) => s.id)
+const Monogram = () => (
+  <span className="grid h-10 w-10 place-items-center rounded-full border border-gold/50 font-display text-lg italic text-gold-light transition-colors group-hover:border-gold">
+    {profile.initials}
+  </span>
+)
 
 const Navbar = () => {
-  const active = useActiveSection(sectionIds)
+  const { chapter } = useSyncExternalStore(subscribe, getSnapshot)
   const [scrolled, setScrolled] = useState(false)
-  const progressRef = useRef(null)
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef(null)
+  const buttonRef = useRef(null)
 
-  // Progress bar is written straight to the DOM so scrolling never re-renders React.
   useEffect(() => {
-    let frame = 0
-    const update = () => {
-      frame = 0
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      const p = max > 0 ? window.scrollY / max : 0
-      if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`
-      setScrolled(window.scrollY > 24)
-    }
-    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update) }
-    update()
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      cancelAnimationFrame(frame)
-    }
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Phone menu: lock the page behind it, focus the first link, close on Escape.
+  useEffect(() => {
+    if (!open) return
+    const root = document.documentElement
+    root.style.overflow = 'hidden'
+    menuRef.current?.querySelector('a')?.focus()
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onKey)
+    const button = buttonRef.current
+    return () => {
+      root.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+      button?.focus()
+    }
+  }, [open])
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled ? 'border-b border-line bg-ink/90' : 'border-b border-transparent'
-      }`}
-    >
-      <div className="container-x flex h-16 items-center justify-between">
-        <a href="#home" className="group flex items-center gap-2.5" aria-label="Back to top">
-          <span className="grid h-9 w-9 place-items-center rounded-lg border border-white/15 bg-white/5 font-mono text-sm font-medium transition-colors group-hover:border-neon-green/60 group-hover:text-neon-green">
-            {profile.initials}
-          </span>
-          <span className="hidden font-mono text-xs uppercase tracking-[0.2em] text-muted sm:inline">
-            {profile.name.split(' ')[0]}
-          </span>
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div
+        className={`absolute inset-0 border-b border-hairline bg-ink/75 backdrop-blur-md transition-opacity duration-500 ${
+          scrolled || open ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+      <div className="container-x relative flex h-20 items-center justify-between">
+        <a href="#home" className="group flex items-center gap-3.5" aria-label={`${profile.name}, back to top`} onClick={() => setOpen(false)}>
+          <Monogram />
+          <span className="hidden font-display text-xl text-ivory sm:block">{profile.name}</span>
         </a>
 
-        <nav aria-label="Sections">
-          <ul className="flex items-center gap-1 sm:gap-2">
-            {sections.map(({ id, label, accent }) => {
-              const isActive = active === id
+        <nav aria-label="Chapters" className="hidden lg:block">
+          <ul className="flex items-center gap-9">
+            {chapters.map(({ id, numeral, label }) => {
+              const active = chapter === id
               return (
-                <li key={id} data-accent={accent}>
+                <li key={id}>
                   <a
                     href={`#${id}`}
-                    aria-current={isActive ? 'true' : undefined}
-                    className={`flex items-center gap-2 rounded-md px-2.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors sm:px-3 ${
-                      isActive ? 'text-accent' : 'text-muted hover:text-fg'
+                    aria-current={active ? 'true' : undefined}
+                    className={`smallcaps group relative flex items-baseline gap-2.5 py-2 transition-colors ${
+                      active ? 'text-ivory' : 'text-stone hover:text-ivory'
                     }`}
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full transition-all ${isActive ? 'scale-125' : 'opacity-40'}`}
-                      style={{ background: 'var(--accent)' }}
-                    />
+                    <span className="numeral text-base">{numeral}</span>
                     {label}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-gold transition-transform duration-500 ${
+                        active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                      }`}
+                    />
                   </a>
                 </li>
               )
             })}
           </ul>
         </nav>
+
+        <button
+          ref={buttonRef}
+          type="button"
+          aria-expanded={open}
+          aria-controls="menu"
+          onClick={() => setOpen((o) => !o)}
+          className="smallcaps flex items-center gap-3 py-3 text-ivory lg:hidden"
+        >
+          {open ? 'Close' : 'Menu'}
+          <span aria-hidden="true" className="relative block h-3 w-6">
+            <span className={`absolute left-0 h-px w-6 bg-gold transition-transform duration-300 ${open ? 'top-1.5 rotate-45' : 'top-0.5'}`} />
+            <span className={`absolute left-0 h-px w-6 bg-gold transition-transform duration-300 ${open ? 'top-1.5 -rotate-45' : 'top-2.5'}`} />
+          </span>
+        </button>
       </div>
+
       <div
-        ref={progressRef}
-        className="absolute inset-x-0 bottom-0 h-0.5 origin-left"
-        style={{ transform: 'scaleX(0)', background: 'linear-gradient(90deg,#3dffa2,#8183ff,#ff5fb1)' }}
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 h-px w-full origin-left bg-gold/70"
+        style={{ transform: 'scaleX(var(--progress))' }}
       />
+
+      {open && (
+        <div id="menu" ref={menuRef} className="fixed inset-x-0 bottom-0 top-20 z-40 bg-ink/95 backdrop-blur-md lg:hidden">
+          <nav aria-label="Chapters" className="container-x flex h-full flex-col justify-center pb-20">
+            <ul className="space-y-7">
+              {chapters.map(({ id, numeral, title }) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    onClick={() => setOpen(false)}
+                    aria-current={chapter === id ? 'true' : undefined}
+                    className="flex items-baseline gap-5 font-display text-[2.6rem] leading-none text-ivory"
+                  >
+                    <span className="numeral w-10 text-2xl">{numeral}</span>
+                    {title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-14 border-t border-hairline pt-6">
+              <a href={`mailto:${profile.email}`} className="smallcaps text-gold">{profile.email}</a>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }

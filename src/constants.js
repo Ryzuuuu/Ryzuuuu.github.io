@@ -9,27 +9,29 @@ export const profile = {
 }
 
 export const nowBuilding = [
-  'AeroSense Edge: onboard AI for leaner flights',
-  'TriSense: assistive sensing on a Raspberry Pi',
-  'MemoryBot: a chatbot that never leaves your laptop',
+  'AeroSense Edge, onboard AI for leaner flights',
+  'TriSense, assistive sensing on a Raspberry Pi',
+  'MemoryBot, a chatbot that never leaves your laptop',
 ]
 
-// `accent` ties each section to the 3D object that opens it.
-export const sections = [
-  { id: 'about', label: 'About', accent: 'green', object: 'the monitor' },
-  { id: 'projects', label: 'Projects', accent: 'blue', object: 'a gamepad' },
-  { id: 'contact', label: 'Contact', accent: 'pink', object: 'the TV' },
+// The four chapters in the nav. Each one is tied to a piece of the exhibit:
+// scrolling to the chapter turns the camera to that piece, clicking the piece opens it.
+export const chapters = [
+  { id: 'about', numeral: 'I', label: 'About', title: 'Profile', piece: 'the monitor' },
+  { id: 'expertise', numeral: 'II', label: 'Expertise', title: 'Expertise', piece: 'the console' },
+  { id: 'work', numeral: 'III', label: 'Work', title: 'Selected Work', piece: 'the controllers' },
+  { id: 'contact', numeral: 'IV', label: 'Contact', title: 'Correspondence', piece: 'the receiver' },
 ]
 
 export const stats = [
-  { value: '30+', label: 'public repos' },
-  { value: '2+', label: 'years building' },
-  { value: '3', label: 'projects in progress' },
+  { value: '30+', label: 'Public repositories', short: 'Repositories' },
+  { value: '2+', label: 'Years building', short: 'Years' },
+  { value: '3', label: 'Projects in progress', short: 'In progress' },
 ]
 
 export const loadout = [
   { group: 'Languages', items: ['Python', 'JavaScript', 'Java', 'PHP', 'SQL'] },
-  { group: 'AI & vision', items: ['PyTorch', 'YOLOv8', 'MediaPipe', 'OpenCV', 'Librosa'] },
+  { group: 'AI & Vision', items: ['PyTorch', 'YOLOv8', 'MediaPipe', 'OpenCV', 'Librosa'] },
   { group: 'Web & APIs', items: ['React', 'Three.js', 'FastAPI', 'Node.js', 'Tailwind'] },
   { group: 'Hardware & CAD', items: ['Raspberry Pi', 'pythonOCC', 'OpenSees', 'Docker'] },
 ]

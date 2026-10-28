@@ -4,22 +4,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#07070c',
-        panel: '#0e0e17',
-        line: 'rgba(255,255,255,0.08)',
-        fg: '#ecebf4',
-        muted: '#a3a0b8',
-        dim: '#6c6982',
-        neon: {
-          green: '#3dffa2',
-          blue: '#8183ff',
-          pink: '#ff5fb1',
+        ink: '#0e0c0a',
+        umber: '#16130f',
+        walnut: '#1f1a15',
+        ivory: '#f1eadc',
+        parchment: '#cbc0ab',
+        stone: '#8f8473',
+        hairline: 'rgb(201 164 92 / 0.2)',
+        gold: {
+          DEFAULT: '#c9a45c',
+          light: '#e3c78e',
+          deep: '#8f7238',
+        },
+        claret: {
+          DEFAULT: '#7d2633',
+          light: '#c45a69',
         },
       },
       fontFamily: {
-        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['Jost', 'system-ui', 'sans-serif'],
       },
       screens: {
         xs: '450px',
