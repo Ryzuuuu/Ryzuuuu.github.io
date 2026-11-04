@@ -1,5 +1,7 @@
 # Neelabja Mukhopadhyay · Portfolio
 
+**Live site: https://ryzuuuu.github.io/**
+
 A one-page portfolio built around a 3D retro console standing on a teal island. The console stays fixed behind the page and every chapter does something to it: the **how I work** steps rebuild it from wireframe to clay to finished, **About** turns to the monitor, **Toolbox** opens up the mechanism, each **work** reloads the cartridge and its title card, and **Contact** sets the antenna broadcasting. Drag to turn it, or click a piece to jump to its chapter.
 
 Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set in Bricolage Grotesque, Schibsted Grotesk and Martian Mono.
@@ -13,6 +15,10 @@ pnpm build        # production build in dist/
 pnpm preview      # serve the production build
 pnpm lint
 ```
+
+## Deployment
+
+Live at **https://ryzuuuu.github.io/**. Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which lints, builds and publishes `dist/` to GitHub Pages. In the repo's Pages settings, the source must be **GitHub Actions**. Pull requests run the same checks without publishing.
 
 ## Editing content
 
