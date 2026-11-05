@@ -13,6 +13,8 @@ import { focus } from './targets'
 const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const { damp, clamp } = THREE.MathUtils
 const color = (name) => new THREE.Color().setRGB(...linear(name), THREE.LinearSRGBColorSpace)
+// Rendering the shadow pass every frame is fine on a desktop GPU, less so on a phone.
+const shadows = typeof window !== 'undefined' && !window.matchMedia('(pointer: coarse)').matches
 
 // A key light on whatever the camera is studying. It hangs above and behind the camera,
 // like a photographer's, so its reflection on the plinth falls away from view.
@@ -28,7 +30,7 @@ const FollowSpot = () => {
     l.target.position.set(focus.x, focus.y, focus.z)
     l.target.updateMatrixWorld()
   })
-  return <spotLight ref={light} angle={0.32} penumbra={1} intensity={20} decay={1.6} distance={40} color="#ffffff" />
+  return <spotLight ref={light} angle={0.32} penumbra={1} intensity={7} decay={1.6} distance={40} color="#ffffff" />
 }
 
 // The plinth and everything on it. It bobs gently, and leans into fast scrolls like
@@ -51,24 +53,44 @@ const Island = () => {
       <group position={[0, 0, 1.15]}>
         <ConsoleModel onSelect={goTo} />
       </group>
-      <ContactShadows position={[0, 0.006, 0]} opacity={0.65} scale={11} blur={2.2} far={3.2} resolution={512} frames={1} color={rgb('text')} />
+      <ContactShadows position={[0, 0.006, 0]} opacity={0.55} scale={11} blur={2.4} far={2.4} resolution={512} frames={1} color={rgb('text')} />
     </group>
   )
 }
 
 const Lights = () => {
-  const c = useMemo(() => ({ rim: color('highlight'), pop: color('secondary') }), [])
+  const c = useMemo(() => ({ bounce: color('primary') }), [])
   return (
     <>
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[-6, 10, 8]} intensity={1.6} />
-      <directionalLight position={[6, 12, -7]} intensity={1.4} color={c.rim} />
-      <pointLight position={[-8, 3, -6]} intensity={18} color={c.pop} />
+      <ambientLight intensity={0.16} />
+      {/* Warm key from the upper left, the only light that throws a shadow. */}
+      <directionalLight
+        castShadow={shadows}
+        position={[-7, 11, 8]}
+        intensity={2.5}
+        color="#fff0df"
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.025}
+        shadow-radius={5}
+        shadow-camera-left={-8}
+        shadow-camera-right={8}
+        shadow-camera-top={8}
+        shadow-camera-bottom={-8}
+        shadow-camera-near={2}
+        shadow-camera-far={32}
+      />
+      {/* Cool kicker from behind, to pull the casing off the page. */}
+      <directionalLight position={[7, 7, -9]} intensity={1.1} color="#d5f4ff" />
       <FollowSpot />
-      <Environment resolution={128} frames={1}>
-        <Lightformer form="rect" intensity={1.5} position={[0, 6, 4]} rotation-x={-Math.PI / 3} scale={[10, 3, 1]} />
-        <Lightformer form="rect" intensity={1.2} color={c.rim} position={[-7, 2, 1]} rotation-y={Math.PI / 2} scale={[8, 2, 1]} />
-        <Lightformer form="rect" intensity={0.6} color={c.pop} position={[7, 2, -2]} rotation-y={-Math.PI / 2} scale={[8, 3, 1]} />
+      <Environment resolution={256} frames={1} environmentIntensity={1.15}>
+        {/* The casing is metallic, so its colour is mostly what it reflects: give it a whole room. */}
+        <color attach="background" args={['#7d8f88']} />
+        <Lightformer form="rect" intensity={2.4} position={[0, 7, 3]} rotation-x={-Math.PI / 2.4} scale={[12, 5, 1]} />
+        <Lightformer form="rect" intensity={1.3} color="#ffe6cf" position={[-8, 2.5, 2]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} />
+        <Lightformer form="rect" intensity={0.9} position={[8, 2.5, -1]} rotation-y={-Math.PI / 2} scale={[6, 4, 1]} />
+        {/* The island lights the underside of everything standing on it. */}
+        <Lightformer form="circle" intensity={0.7} color={c.bounce} position={[0, -3, 0]} rotation-x={Math.PI / 2} scale={14} />
       </Environment>
     </>
   )
@@ -93,22 +115,26 @@ const Stage = () => {
     <>
       <div
         aria-hidden="true"
-        className={`fixed inset-0 z-0 transition-opacity duration-[1600ms] ease-out ${ready ? 'opacity-100' : 'opacity-0'}`}
+        className={`exhibit transition-opacity duration-[1600ms] ease-out ${ready ? 'opacity-100' : 'opacity-0'}`}
       >
-        <Canvas
-          dpr={dpr}
-          camera={{ fov: 35, near: 0.1, far: 140, position: [24, 16, 30] }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-          onPointerMissed={() => setHovered(null)}
-        >
-          <PerformanceMonitor onDecline={() => setDpr(1)} />
-          <Suspense fallback={null}>
-            <CameraRig />
-            <Lights />
-            <Island />
-            <Ready onReady={onReady} />
-          </Suspense>
-        </Canvas>
+        <div className="exhibit__frame">
+          <Canvas
+            dpr={dpr}
+            shadows={shadows}
+            camera={{ fov: 35, near: 0.1, far: 140, position: [24, 16, 30] }}
+            // Neutral tone mapping keeps the plastic's colour true; ACES would push it towards salmon.
+            gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', toneMapping: THREE.NeutralToneMapping }}
+            onPointerMissed={() => setHovered(null)}
+          >
+            <PerformanceMonitor onDecline={() => setDpr(1)} />
+            <Suspense fallback={null}>
+              <CameraRig />
+              <Lights />
+              <Island />
+              <Ready onReady={onReady} />
+            </Suspense>
+          </Canvas>
+        </div>
       </div>
       <Progress />
     </>

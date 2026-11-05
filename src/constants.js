@@ -1,130 +1,174 @@
-// All site copy lives here — edit this file to update the portfolio.
+// All site copy lives here. The monitor's instruments read from this file too: they use
+// `profile`, `tools`, and each project's `title` and `status`, plus each side project's `title`.
+//
+// House style: plain first person, a little dry. Say what a thing does the way you'd explain it
+// to a friend, and leave code names and library internals to the monitor. Every claim should be
+// traceable to a repo or a real experience, and admitting what went wrong is allowed.
 
 export const profile = {
   name: 'Neelabja Mukhopadhyay',
-  short: 'neelabja m.',
-  initials: 'NM',
-  // Taken from the git commit metadata — swap for whichever address you want public.
+  first: 'Neelabja',
+  bengali: 'নীলাব্জ মুখোপাধ্যায়',
   email: 'neel.abja114@gmail.com',
   github: 'https://github.com/Ryzuuuu',
+  githubUser: 'Ryzuuuu',
 }
 
-export const onTheBench = [
-  'AeroSense Edge, onboard AI for leaner flights',
-  'TriSense, three extra senses on a Raspberry Pi',
-  'MemoryBot, a chatbot that never leaves your laptop',
-]
+export const intro = {
+  statement:
+    'I study computer science at VIT Bhopal. Mostly I build things that try to make sense of cameras, microphones and sensors, then find out how they behave once they leave my laptop.',
+  now: [
+    ['FOSSEE, IIT Bombay', '3D bridge models for Osdag'],
+    ['Travarsa', 'AI agents and computer vision'],
+  ],
+}
 
 // The four chapters in the nav. Each is tied to a piece of the console: scrolling to the
 // chapter swings the camera to that piece, and clicking the piece takes you to the chapter.
 export const chapters = [
-  { id: 'about', num: '01', label: 'About', piece: 'the monitor' },
-  { id: 'toolbox', num: '02', label: 'Toolbox', piece: 'the console' },
-  { id: 'work', num: '03', label: 'Work', piece: 'the controllers' },
-  { id: 'contact', num: '04', label: 'Contact', piece: 'the antenna' },
+  { id: 'about', label: 'About' },
+  { id: 'toolbox', label: 'Tools' },
+  { id: 'work', label: 'Work' },
+  { id: 'contact', label: 'Contact' },
 ]
 
-// "How I work", told by the model itself: wireframe → clay → finished.
+// How a project goes, acted out by the model: wireframe, then clay, then finished.
 export const process = [
   {
-    step: 'Step one',
-    title: ['Make it', 'work.'],
-    body: 'Ugly is allowed. Wrong isn’t. The first version runs end to end, even if it’s mostly print statements and hope.',
-    note: 'Pictured: the console, as a wireframe. It boots. That’s about it.',
+    title: ['First,', 'make it run.'],
+    body: 'The first version is ugly, but it goes all the way through. Camera in, keypress out. Until it does that, I can’t tell which part of the idea is the hard part, and it’s rarely the part I was worried about.',
   },
   {
-    step: 'Step two',
-    title: ['Make it', 'survive', 'reality.'],
-    body: 'Real webcams shake. Real audio hisses. Real Raspberry Pis get warm and sulk. Version two has met all of them and kept working.',
-    note: 'Pictured: grey clay. Solid, honest, no makeup yet.',
+    title: ['Then try', 'to break it.'],
+    body: 'When I properly tested Fasal Sahaayak’s fertilizer model, it scored 14%, about what you’d get by guessing. A weather bug had also convinced another model that monsoon rice gets 38 mm of rain. It’s closer to 1,350. I took the fertilizer model out and wrote rules with a source behind every dose. Slightly embarrassing, very useful.',
   },
   {
-    step: 'Step three',
-    title: ['Then make it', 'beautiful.'],
-    body: 'Only now am I allowed to pick fonts. You’re scrolling through the result of exactly this rule.',
-    note: 'Pictured: the finished thing. Colour, light, the works.',
+    title: ['Then, finally,', 'make it nice.'],
+    body: 'You just watched this console go from wireframe to clay to finished, which is roughly how the site got built too. Polish comes last, so I don’t get attached to something broken.',
   },
 ]
 
-export const stats = [
-  { value: 30, suffix: '+', label: 'public repos', short: 'repos' },
-  { value: 2, suffix: '+', label: 'years of shipping things', short: 'years' },
-  { value: 3, suffix: '', label: 'projects mid-flight right now', short: 'in flight' },
+export const about = {
+  title: ['I point cameras', 'at hands.'],
+  paragraphs: [
+    'It started with a webcam: changing slides with an open palm, playing a piano in mid-air, catching falling balls with one finger. A lot of my debugging looks like waving at a laptop. TriSense is the one that stopped being a toy, a Raspberry Pi that reads 100 hand signs and says them out loud for someone who can’t.',
+    'My internships involve less waving. At FOSSEE I work on Osdag, an open-source bridge design tool, generating the 3D models. At Travarsa I build AI agents and computer vision systems.',
+  ],
+  facts: [
+    ['Studying', 'B.Tech CSE, VIT Bhopal'],
+    ['Graduating', '2027'],
+    ['Working in', 'Python, mostly'],
+  ],
+}
+
+export const tools = [
+  { verb: 'To see', items: ['OpenCV', 'MediaPipe', 'YOLOv8', 'ByteTrack'] },
+  { verb: 'To hear', items: ['Librosa', 'Parselmouth', 'Vosk'] },
+  { verb: 'To predict', items: ['PyTorch', 'LightGBM', 'XGBoost', 'scikit-learn'] },
+  { verb: 'To reason', items: ['LangChain', 'LangGraph', 'llama.cpp'] },
+  { verb: 'To serve', items: ['FastAPI', 'Flask', 'PostgreSQL', 'Docker'] },
+  { verb: 'To show', items: ['React', 'Three.js', 'Vite'] },
+  { verb: 'To make real', items: ['Raspberry Pi', 'pythonOCC', 'OpenSees'] },
 ]
 
-export const loadout = [
-  { group: 'Languages', aside: 'the ones I think in', items: ['Python', 'JavaScript', 'Java', 'PHP', 'SQL'] },
-  { group: 'AI & vision', aside: 'teaching pixels to talk', items: ['PyTorch', 'YOLOv8', 'MediaPipe', 'OpenCV', 'Librosa'] },
-  { group: 'Web & APIs', aside: 'where everything ends up', items: ['React', 'Three.js', 'FastAPI', 'Node.js', 'Tailwind'] },
-  { group: 'Hardware & CAD', aside: 'things with screws in them', items: ['Raspberry Pi', 'pythonOCC', 'OpenSees', 'Docker'] },
-]
-
+// `instrument` is the page's caption for what the monitor runs (see canvas/instruments.js).
 export const projects = [
   {
-    title: 'AeroSense Edge',
-    quip: 'Less fuel, same sky.',
-    genre: 'Edge AI · Aviation',
-    status: 'In progress',
-    blurb:
-      'Planes carry extra fuel “just in case”, then burn fuel carrying it. This is onboard AI that tunes fuel and emissions in real time, on the aircraft, not in some cloud on the ground.',
-    tags: ['Python', 'Edge AI', 'Optimization'],
-    repo: 'https://github.com/Ryzuuuu/AeroSenseEdge',
-  },
-  {
+    id: 'trisense',
     title: 'TriSense',
-    quip: 'Three extra senses. One Pi.',
-    genre: 'Assistive · Embedded',
+    field: 'Assistive hardware',
     status: 'In progress',
-    blurb:
-      'Ultrasonic spatial haptics, live subtitles that work offline, and 3D sign-language recognition, all on a Raspberry Pi 4. Low latency, no internet required, no excuses.',
-    tags: ['PyTorch', 'MediaPipe', 'Vosk', 'Raspberry Pi'],
+    summary: 'Three modes, one Raspberry Pi, no internet.',
+    body: 'For someone who can’t see, it senses obstacles and buzzes for longer as they get closer. For someone who can’t hear, it turns speech into captions on a tiny screen. For someone who can’t speak, a camera reads their hand signs and says them aloud. All of that on one small computer, which has opinions about it.',
+    figure: { value: '100', note: 'hand signs it can read and say out loud' },
+    stack: 'PyTorch, MediaPipe, Vosk, Raspberry Pi',
+    instrument: 'How long until you hit it, and the buzz it would send',
     repo: 'https://github.com/Ryzuuuu/TriSense',
   },
   {
+    id: 'fasal',
+    title: 'Fasal Sahaayak',
+    field: 'Agriculture',
+    status: 'Rebuilt',
+    summary: 'Crop advice for Odisha, in English, Hindi and Odia.',
+    body: 'It started as a Smart India Hackathon 2025 entry. Later I tested the models properly, didn’t like the answer, and rebuilt most of it. Now every fertilizer dose links to its source, crops without a reliable dose just say so, and each yield forecast sits next to the simple estimate it barely beats. Farmers act on these numbers, so the app doesn’t get to bluff.',
+    figure: { value: '14%', note: 'what the original model scored. It has since retired.' },
+    stack: 'React, Flask, scikit-learn, NASA POWER data',
+    instrument: 'What the checks found',
+    repo: 'https://github.com/Ryzuuuu/Fasal-Sahaayak',
+  },
+  {
+    id: 'neuroecho',
     title: 'NeuroEcho',
-    quip: 'Ninety seconds. One cheap phone.',
-    genre: 'Health AI · Audio',
-    status: 'Shipped',
-    blurb:
-      'Talk into a budget phone for 90 seconds and it screens your voice for early signs of neurological decline, listening for jitter, shimmer and the pauses you didn’t notice you made.',
-    tags: ['FastAPI', 'PyTorch', 'Librosa', 'Docker'],
+    field: 'Health',
+    status: 'Prototype',
+    summary: 'A voice screening test for places with no specialist nearby.',
+    body: 'You read aloud on a phone or laptop. It listens for small changes in your voice that can be early signs of neurological decline, makes allowances for a cheap microphone, and answers green, yellow or red with a plain explanation. It isn’t a diagnosis, and it says so. Recordings are deleted as soon as they’ve been analysed.',
+    figure: { value: '90 sec', note: 'of reading aloud is all it asks for' },
+    stack: 'FastAPI, Parselmouth, XGBoost, SHAP',
+    instrument: 'What it listens for, on a made-up voice',
     repo: 'https://github.com/Ryzuuuu/NeuroEcho',
   },
   {
+    id: 'storesight',
     title: 'StoreSight',
-    quip: 'CCTV that finally earns its keep.',
-    genre: 'Vision · Retail',
-    status: 'Shipped',
-    blurb:
-      'Raw CCTV footage in, live store analytics out: customer journeys, queue depth, conversion funnels and heatmaps of where people actually linger.',
-    tags: ['YOLOv8', 'ByteTrack', 'Re-ID', 'FastAPI'],
+    field: 'Retail',
+    status: 'Complete',
+    summary: 'Turns a shop’s CCTV clips into footfall and queue numbers.',
+    body: 'It follows people around the shop and works out who went where, who joined the billing queue and who gave up on it. Staff are spotted by their uniform and left out of the counts. Otherwise the most loyal customer in the shop is always the cashier.',
+    figure: { value: '8', note: 'kinds of event it logs, from walking in to giving up on the queue' },
+    stack: 'YOLOv8, ByteTrack, FastAPI, SQLite',
+    instrument: 'A made-up shop floor, being watched',
     repo: 'https://github.com/Ryzuuuu/StoreSight',
   },
   {
+    id: 'aerosense',
+    title: 'AeroSense Edge',
+    field: 'Aviation',
+    status: 'Simulation',
+    summary: 'A fuel advisor that would ride on the aircraft.',
+    body: 'Most fuel optimisation happens on the ground, before or after the flight. This is the idea of doing it in the air, with no link to the ground and the pilot still in charge. So far it has only flown in simulation: a virtual A320, minute by minute, with a model predicting the fuel burn and comparing ways of coming down.',
+    figure: { value: '200', note: 'simulated flights and no real aircraft, which is probably for the best' },
+    stack: 'LightGBM, OpenAP, FastAPI, React',
+    instrument: 'A simulated A320, deciding when to come down',
+    repo: 'https://github.com/Ryzuuuu/AeroSenseEdge',
+  },
+  {
+    id: 'presento',
     title: 'PresentoVision',
-    quip: 'Your hand is the clicker now.',
-    genre: 'Vision · HCI',
-    status: 'Shipped',
-    blurb:
-      'Open palm for next slide, fist to pause, two fingers for fullscreen. Works with anything that listens to a keypress, so, most things.',
-    tags: ['OpenCV', 'MediaPipe', 'YOLOv8n'],
+    field: 'Gesture control',
+    status: 'Complete',
+    summary: 'Run a slide deck with one hand.',
+    body: 'An open palm moves forward or back, a fist pauses, two fingers go fullscreen. It only sends ordinary key presses, so PowerPoint, Google Slides, Keynote and PDF viewers work without knowing it’s there. A short cooldown stops one enthusiastic wave from skipping three slides.',
+    figure: { value: '4 of 6', note: 'frames have to agree before it believes a gesture' },
+    stack: 'MediaPipe, OpenCV, YOLOv8n',
+    instrument: 'Six frames voting on a gesture',
     repo: 'https://github.com/Ryzuuuu/PresentoVision',
   },
   {
+    id: 'parabridge',
     title: 'ParaBridge',
-    quip: 'Type some numbers. Get a bridge.',
-    genre: 'CAD · Civil',
-    status: 'Shipped',
-    blurb:
-      'Change a few parameters and out comes a full steel girder bridge in 3D, with IRC loading, IS 800 design checks and a STEP export. Built for FOSSEE Osdag.',
-    tags: ['Python', 'pythonOCC', 'CAD'],
+    field: 'Bridge design',
+    status: 'Complete',
+    summary: 'A whole steel bridge, generated from one set of numbers.',
+    body: 'Girders, deck, piers, foundations and reinforcement are all worked out from the same numbers, so changing the span moves everything that depends on it. You can export the model for CAD, or open it in a viewer where the concrete goes see-through. I wrote it to the requirements of Osdag’s bridge module.',
+    figure: { value: '1', note: 'set of numbers, and every part of the bridge follows from it' },
+    stack: 'pythonOCC, OpenCASCADE, PySide6',
+    instrument: 'The span changing, and the bridge following',
     repo: 'https://github.com/Ryzuuuu/ParaBridge',
   },
 ]
 
-export const sideQuests = [
-  { title: 'Fasal Sahaayak', note: 'Smart India Hackathon 2025 entry', repo: 'https://github.com/Ryzuuuu/Fasal-Sahaayak' },
-  { title: 'OsdagBridge', note: 'Bridge analysis & design for Osdag. A fork, for now.', repo: 'https://github.com/Ryzuuuu/OsdagBridge' },
-  { title: 'PrimeTrade API', note: 'FastAPI, JWT and role-based access. An assignment, taken slightly too seriously.', repo: 'https://github.com/Ryzuuuu/primetrade-assignment' },
-  { title: 'This site', note: 'You are standing in it. Mind the antenna.', repo: 'https://github.com/Ryzuuuu/Ryzuuuu.github.io' },
+export const sideProjects = [
+  { title: 'NoteTouch', note: 'A piano played in the air. The left hand picks the scale.', repo: 'https://github.com/Ryzuuuu/NoteTouch' },
+  { title: 'InvisiCloak', note: 'Frame a rectangle with both hands and see the empty room through it.', repo: 'https://github.com/Ryzuuuu/InvisiCloak' },
+  { title: 'FingerFall', note: 'Catch falling balls with your index finger. Avoid the bombs.', repo: 'https://github.com/Ryzuuuu/FingerFall' },
+  { title: 'MemoryBot', note: 'A chatbot running on my own machine, with five ways of remembering things to compare.', repo: 'https://github.com/Ryzuuuu/MemoryBot' },
+  { title: 'Shortlist', note: 'CV screening and a client portal for a staffing firm.', repo: 'https://github.com/Ryzuuuu/Shortlist' },
+  { title: 'Clock', note: 'A grandfather clock in React, with a swinging pendulum. Nobody asked.', repo: 'https://github.com/Ryzuuuu/Clock' },
 ]
+
+export const contact = {
+  title: ['Say hello.'],
+  body: 'I graduate in 2027. If you’re working on something that has to survive outside a demo, or you’ve found what’s wrong with one of my projects, I’d like to hear about it.',
+}

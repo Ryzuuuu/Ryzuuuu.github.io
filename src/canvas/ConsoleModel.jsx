@@ -9,21 +9,19 @@ import { orbit, TARGETS } from './targets'
 import MonitorScreen from './MonitorScreen'
 import Signal from './Signal'
 
-const MODEL_URL = '/console.glb'
+const coarse = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+// Same model with quarter-size textures on phones, which pay for every texture in GPU memory.
+const MODEL_URL = coarse ? '/console-phone.glb' : '/console.glb'
 const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const damp = THREE.MathUtils.damp
 const color = (name) => new THREE.Color().setRGB(...linear(name), THREE.LinearSRGBColorSpace)
 
-// Mint-white casings, near-black teal trim, wine-red accessories: straight from the palette.
-const PALETTE = {
-  Monitor_body_mat: { color: 'bg-light', roughness: 0.45 },
-  VGS_body_mat: { color: 'bg-light', roughness: 0.45 },
-  Monitor_details_one_mat: { color: 'text', roughness: 0.5 },
-  Monitor_details_two_mat: { color: 'text', roughness: 0.4, metalness: 0.3 },
-  VGS_details_one_mat: { color: 'text', roughness: 0.5 },
-  VGS_details_two_mat: { color: 'primary', roughness: 0.35, metalness: 0.4 },
-  Gamepad_and_cartridge: { color: 'secondary', roughness: 0.35 },
-}
+// The foot of the antenna, measured from the mesh. Its bounding box is no use for this: the
+// coiled lead that belongs to the same mesh drags the centre well away from the antenna.
+const ANTENNA = [2.955, 0.02, -2.24]
+
+// Texture slots worth sharpening at the grazing angles the camera keeps visiting.
+const MAPS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap']
 
 // The "how I work" steps render the console as a wireframe, then clay, then finished.
 const MODE_FOR = { 'process-0': 'wire', 'process-1': 'clay' }
@@ -34,19 +32,17 @@ const prepareScene = (scene) => {
     if (!o.isMesh) return
     // Real geometry never gets raycast; cheap invisible boxes handle picking instead.
     o.raycast = () => {}
-    const p = PALETTE[o.material.name]
-    if (p && !o.material.userData.recolored) {
-      o.material.userData.recolored = true
-      o.material.color.copy(color(p.color))
-      o.material.roughness = p.roughness
-      if (p.metalness !== undefined) o.material.metalness = p.metalness
+    for (const slot of MAPS) if (o.material[slot]) o.material[slot].anisotropy = coarse ? 4 : 8
+    if (!o.material.transparent) {
+      o.castShadow = true
+      o.receiveShadow = true
     }
   })
 
   scene.updateMatrixWorld(true)
   const toLocal = scene.matrixWorld.clone().invert()
   const boxOf = (node) => new THREE.Box3().setFromObject(node).applyMatrix4(toLocal)
-  const glowColor = color('highlight')
+  const glowColor = new THREE.Color('#ffe9d6')
 
   const proxies = []
   const glow = {}
@@ -59,6 +55,8 @@ const prepareScene = (scene) => {
         if (!o.isMesh) return
         // Own materials so lighting up one piece doesn't light every piece sharing it.
         o.material = o.material.clone()
+        // Parts with an emissive map have real indicator lights, so those stay as authored.
+        if (o.material.emissiveMap) return
         o.material.emissive = glowColor.clone()
         o.material.emissiveIntensity = 0
         // The monitor glass is driven by the screen wash below instead.
@@ -90,22 +88,19 @@ const prepareScene = (scene) => {
   scene.traverse((o) => { if (o.isMesh) meshes.push({ mesh: o, finished: o.material }) })
   const looks = {
     wire: new THREE.MeshBasicMaterial({ color: color('highlight'), wireframe: true, transparent: true, opacity: 0.5, toneMapped: false }),
-    clay: new THREE.MeshStandardMaterial({ color: color('bg-dark'), roughness: 0.9, metalness: 0 }),
+    clay: new THREE.MeshStandardMaterial({ color: '#b9a48f', roughness: 0.9, metalness: 0 }),
   }
 
   // The cartridge sitting in the console's bay; it reseats itself for each work.
   const cart = scene.getObjectByName('Bricktris_9')
-  const receiver = scene.getObjectByName('Lumen_TV_35')
-  const rb = receiver ? boxOf(receiver) : null
-  const signalAt = rb ? [(rb.min.x + rb.max.x) / 2, 0.02, (rb.min.z + rb.max.z) / 2] : [2.4, 0.02, -3]
 
-  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, signalAt, meshes, looks }
+  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks }
 }
 
 const ConsoleModel = ({ onSelect }) => {
   const { scene, animations } = useGLTF(MODEL_URL)
   const { actions } = useAnimations(animations, scene)
-  const { proxies, glow, glass, cart, cartY, signalAt, meshes, looks } = useMemo(() => prepareScene(scene), [scene])
+  const { proxies, glow, glass, cart, cartY, meshes, looks } = useMemo(() => prepareScene(scene), [scene])
   const powered = useRef(false)
   const scanner = useRef()
   const gl = useThree((s) => s.gl)
@@ -186,7 +181,10 @@ const ConsoleModel = ({ onSelect }) => {
     if (mode !== s.mode) {
       s.mode = mode
       s.scan = reducedMotion ? 1 : 0
-      for (const { mesh, finished } of meshes) mesh.material = mode === 'full' ? finished : looks[mode]
+      for (const { mesh, finished } of meshes) {
+        mesh.material = mode === 'full' ? finished : looks[mode]
+        mesh.castShadow = mode !== 'wire' && !finished.transparent
+      }
     }
     s.scan = Math.min(1, s.scan + dt * 1.5)
     if (scanner.current) {
@@ -200,7 +198,7 @@ const ConsoleModel = ({ onSelect }) => {
     const breathe = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(t * 2.4)
     for (const [id, mats] of Object.entries(glow)) {
       const target =
-        (chapter === id ? 0.04 + breathe * 0.08 : 0) + (hovered === id ? 0.35 : 0) + (s.flash === id ? s.flashT * 1.2 : 0)
+        (chapter === id ? 0.015 + breathe * 0.03 : 0) + (hovered === id ? 0.16 : 0) + (s.flash === id ? s.flashT * 0.7 : 0)
       for (const m of mats) m.emissiveIntensity = damp(m.emissiveIntensity, target, 8, dt)
     }
 
@@ -232,7 +230,7 @@ const ConsoleModel = ({ onSelect }) => {
     <group>
       <primitive object={scene} />
       <MonitorScreen position={[-0.025, 1.9, -2.74]} size={[2.3, 1.56]} powered={powered} />
-      <Signal position={signalAt} />
+      <Signal position={ANTENNA} />
       <mesh ref={scanner} rotation-x={-Math.PI / 2} position={[0, 0, -1.15]} visible={false}>
         <ringGeometry args={[3.9, 4.0, 128]} />
         <meshBasicMaterial color={color('highlight')} transparent opacity={0} depthWrite={false} toneMapped={false} />

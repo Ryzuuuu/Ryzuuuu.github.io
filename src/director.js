@@ -8,9 +8,9 @@ import { resolveShot, SPLIT_MIN_WIDTH } from './canvas/shots'
 // inside the range and cross-fades into the next one around the boundary.
 //
 // One animation loop drives everything: Lenis's smoothed scroll, the shot blend the 3D scene
-// reads each frame, scroll velocity (so the model can feel how hard you're scrolling), parallax
-// and marquees. React only hears about the discrete parts (chapter, tone, monitor screen,
-// hovered piece) through `subscribe`, so scrolling never re-renders anything.
+// reads each frame, and scroll velocity (so the model can feel how hard you're scrolling).
+// React only hears about the discrete parts (chapter, tone, monitor screen, hovered piece)
+// through `subscribe`, so scrolling never re-renders anything.
 
 const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -42,7 +42,7 @@ export const setHovered = (hovered) => publish({ hovered })
 export const goTo = (id) => {
   const el = document.getElementById(id)
   if (!el) return
-  if (lenis) lenis.scrollTo(el, { duration: 1.8, force: true })
+  if (lenis) lenis.scrollTo(el, { duration: 2.2, force: true })
   else el.scrollIntoView()
 }
 
@@ -56,6 +56,8 @@ const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const smooth = (t) => t * t * (3 - 2 * t)
 const read = (el, local) => ({ shot: el.dataset.shot, param: Number(el.dataset.param ?? 0), local })
 const TONE_COLOR = { light: '#cffef1', dark: '#00160a' }
+// The opening shot's copy and console already sit apart, so nothing needs veiling.
+const scrimFor = (shot) => (shot === 'hero' ? 0 : 1)
 
 export const startDirector = () => {
   const root = document.documentElement
@@ -80,7 +82,9 @@ export const startDirector = () => {
     const n = anchors.length
     if (!n) return
     const vh = window.innerHeight
-    const focus = vh * 0.5
+    // Below the desktop layout, copy only shows under the console's window: finish the move by
+    // the time a heading reaches it.
+    const focus = vh * (window.innerWidth < SPLIT_MIN_WIDTH ? 0.8 : 0.5)
     const tops = Array.from(anchors, (el) => el.getBoundingClientRect().top)
     const lastBottom = anchors[n - 1].getBoundingClientRect().bottom
 
@@ -127,73 +131,33 @@ export const startDirector = () => {
     const m = smooth(mix)
     root.style.setProperty('--fx', (sa.fx + (sb.fx - sa.fx) * m).toFixed(4))
     root.style.setProperty('--fy', (sa.fy + (sb.fy - sa.fy) * m).toFixed(4))
+    const wa = scrimFor(director.a.shot)
+    root.style.setProperty('--scrim', (wa + (scrimFor(director.b.shot) - wa) * m).toFixed(4))
 
+    const y = window.scrollY
     const max = root.scrollHeight - vh
-    root.style.setProperty('--progress', (max > 0 ? clamp01(window.scrollY / max) : 0).toFixed(4))
-  }
-
-  // ── Parallax: `data-speed` drifts an element against the scroll ─────────────
-  const shift = new WeakMap()
-  const updateParallax = () => {
-    if (reducedMotion) return
-    const mid = window.innerHeight / 2
-    document.querySelectorAll('[data-speed]').forEach((el) => {
-      const prev = shift.get(el) ?? 0
-      const r = el.getBoundingClientRect()
-      const centre = r.top - prev + r.height / 2
-      if (centre < -window.innerHeight || centre > window.innerHeight * 2) return
-      const y = (centre - mid) * -Number(el.dataset.speed)
-      shift.set(el, y)
-      el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`
-    })
-  }
-
-  // ── Marquees: drift on their own, speed up when you scroll ──────────────────
-  let marquees = []
-  const measure = () => {
-    marquees = Array.from(document.querySelectorAll('[data-marquee]'), (el) => ({
-      track: el.querySelector('.marquee-track'),
-      speed: Number(el.dataset.marquee) || 40,
-      width: el.querySelector('.marquee-track')?.scrollWidth / 2 || 1,
-      x: 0,
-    }))
-  }
-  const updateMarquees = (dt) => {
-    for (const m of marquees) {
-      if (!m.track) continue
-      const boost = reducedMotion ? 0 : Math.min(18, Math.abs(director.velocity)) * 26
-      const dir = Math.sign(m.speed) * (director.velocity < -0.5 ? -1 : 1)
-      m.x = (m.x - (Math.abs(m.speed) + boost) * dir * dt) % m.width
-      if (m.x > 0) m.x -= m.width
-      m.track.style.transform = `translate3d(${m.x.toFixed(1)}px, 0, 0)`
-    }
+    root.style.setProperty('--progress', (max > 0 ? clamp01(y / max) : 0).toFixed(4))
   }
 
   // ── The loop ────────────────────────────────────────────────────────────────
   let raf = 0
   let lastY = -1
-  let lastT = performance.now()
   let dirty = true
   const loop = (t) => {
-    const dt = Math.min(0.1, (t - lastT) / 1000)
-    lastT = t
     lenis?.raf(t)
     const y = window.scrollY
     const raw = lenis ? lenis.velocity : y - (lastY < 0 ? y : lastY)
     director.velocity += (raw - director.velocity) * 0.2
     if (y !== lastY || dirty) {
       updateShots()
-      updateParallax()
       lastY = y
       dirty = false
     }
-    if (!reducedMotion) updateMarquees(dt)
     raf = requestAnimationFrame(loop)
   }
   raf = requestAnimationFrame(loop)
 
-  const onResize = () => { dirty = true; measure() }
-  measure()
+  const onResize = () => { dirty = true }
   window.addEventListener('resize', onResize, { passive: true })
   // Late layout shifts (web fonts, images) move the anchors without a scroll event.
   const ro = new ResizeObserver(onResize)

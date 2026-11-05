@@ -14,16 +14,12 @@ export default {
         muted: token('ink-muted'),
         line: token('line'),
         accent: token('accent'),
-        'on-accent': token('on-accent'),
-        pop: token('pop'),
-        primary: token('primary'),
-        secondary: token('secondary'),
-        highlight: token('highlight'),
       },
       fontFamily: {
         display: ['"Bricolage Grotesque"', '"Arial Black"', 'sans-serif'],
         sans: ['"Schibsted Grotesk"', 'system-ui', 'sans-serif'],
         mono: ['"Martian Mono"', 'ui-monospace', 'monospace'],
+        bengali: ['"Tiro Bangla"', 'serif'],
       },
       screens: {
         xs: '450px',

@@ -40,17 +40,17 @@ const Plinth = () => {
 
   return (
     <group>
-      <mesh position={[0, -0.24, 0]}>
+      <mesh position={[0, -0.24, 0]} receiveShadow>
         <cylinderGeometry args={[RADIUS, RADIUS, 0.48, 128]} />
-        <meshStandardMaterial color={paint.slab} roughness={0.75} metalness={0.05} envMapIntensity={0.4} />
+        <meshStandardMaterial color={paint.slab} roughness={0.92} metalness={0} envMapIntensity={0.22} />
       </mesh>
       <mesh position={[0, -0.012, 0]}>
         <cylinderGeometry args={[RADIUS + 0.014, RADIUS + 0.014, 0.03, 128, 1, true]} />
         <meshBasicMaterial color={paint.lip} toneMapped={false} />
       </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 0]}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.003, 0]} receiveShadow>
         <ringGeometry args={[RADIUS - 0.36, RADIUS - 0.3, 192]} />
-        <meshBasicMaterial color={paint.inlay} toneMapped={false} />
+        <meshStandardMaterial color={paint.inlay} roughness={0.5} />
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position={[0, -1.3, 0]}>
         <planeGeometry args={[19, 19]} />

@@ -15,7 +15,7 @@ const wrap = (deg) => ((((deg + 180) % 360) + 360) % 360) - 180
 // The rig never snaps: shots are damped in spherical terms, so the camera swings around
 // the island instead of cutting through it.
 const CameraRig = () => {
-  const cur = useMemo(() => ({ az: 70, el: 30, dist: 32, fx: 0.5, fy: 0.5, ready: false }), [])
+  const cur = useMemo(() => ({ az: 70, el: 30, dist: 32, fx: 0.5, fy: 0.5, ready: false, turn: 0 }), [])
   const pointer = useMemo(() => ({ x: 0, y: 0 }), [])
 
   // The canvas sits behind the page, so track the pointer on the window instead.
@@ -30,7 +30,8 @@ const CameraRig = () => {
 
   useFrame(({ camera, size, clock }, delta) => {
     const dt = Math.min(delta, 0.1)
-    const split = size.width >= SPLIT_MIN_WIDTH
+    // The window, not the canvas: the layout's breakpoint counts the scrollbar and the canvas doesn't.
+    const split = window.innerWidth >= SPLIT_MIN_WIDTH
     const { a, b, mix } = director
     const sa = resolveShot(a.shot, a.param, a.local, split)
     const sb = resolveShot(b.shot, b.param, b.local, split)
@@ -49,10 +50,19 @@ const CameraRig = () => {
       if (idle > 2.5) orbit.offset = damp(orbit.offset, 0, 1.2, dt)
     }
 
+    // A shot with `spin` keeps turning, and pauses while it's being dragged. Leaving it, the
+    // camera takes the short way back to the next shot.
+    const spin = reducedMotion ? 0 : lerp(sa.spin ?? 0, sb.spin ?? 0, m)
+    if (spin > 0) {
+      if (!orbit.dragging) cur.turn = wrap(cur.turn + spin * dt)
+    } else {
+      cur.turn = damp(wrap(cur.turn), 0, 1.5, dt)
+    }
+
     // Scrolling hard pulls the camera back and swings it a touch, so speed reads as momentum.
     const kick = reducedMotion ? 0 : THREE.MathUtils.clamp(director.velocity, -40, 40)
     const sway = reducedMotion ? 0 : Math.sin(clock.elapsedTime * 0.18) * 2.5
-    const az = sa.az + wrap(sb.az - sa.az) * m + orbit.offset + sway + kick * 0.08 + (reducedMotion ? 0 : pointer.x * 3)
+    const az = sa.az + wrap(sb.az - sa.az) * m + orbit.offset + cur.turn + sway + kick * 0.08 + (reducedMotion ? 0 : pointer.x * 3)
     const el = lerp(sa.el, sb.el, m) + (reducedMotion ? 0 : pointer.y * 1.5)
     const dist = lerp(sa.dist, sb.dist, m) * scale * (1 + Math.abs(kick) * 0.0035)
     const fx = lerp(sa.fx, sb.fx, m)

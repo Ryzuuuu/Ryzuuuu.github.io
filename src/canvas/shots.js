@@ -5,6 +5,7 @@
 //   az/el  azimuth and elevation in degrees (az 0 looks at the front, + swings right)
 //   dist   distance at the reference aspect ratio
 //   fx/fy  where the target lands on screen (0–1), so the copy has room beside it
+//   spin   optional: keep orbiting at this many degrees per second
 // `mobile` overrides apply below the lg breakpoint, where copy scrolls over the lower half.
 
 export const SPLIT_MIN_WIDTH = 1024
@@ -47,24 +48,25 @@ const SHOTS = {
     target: [2.2, 0.95, -1.6], az: 50, el: 14, dist: 8.6, fx: 0.31, fy: 0.5,
     mobile: { dist: 12.5, fy: 0.27 },
   }),
+  // The finale: the console in the middle of the screen, on a slow turntable (`spin`, in deg/s).
   colophon: () => ({
-    target: [0, 0.4, 0.2], az: 18, el: 56, dist: 20, fx: 0.5, fy: 0.37,
+    target: [0, 0.9, 0], az: 18, el: 34, dist: 21, fx: 0.5, fy: 0.48, spin: 5,
     mobile: { dist: 27, fy: 0.3 },
   }),
 }
 
-// Label shown beside the exhibit, keyed by monitor screen first and shot second.
-// `top` pins it to the upper corner when the bottom of the frame is busy.
+// What the monitor is running, shown beside the console. Keyed by screen first and shot
+// second; each project's line lives with the project in constants.js.
 export const CAPTIONS = {
-  hero: { fig: 'Fig. 00', title: 'The whole setup', note: 'Drag it around. Click the bits.' },
-  'process-0': { fig: 'Fig. 01', title: 'Wireframe', note: 'It runs. Barely.' },
-  'process-1': { fig: 'Fig. 02', title: 'Clay', note: 'Survives a shaky webcam now.' },
-  'process-2': { fig: 'Fig. 03', title: 'Finished', note: 'Okay, now it’s pretty.' },
-  about: { fig: 'Fig. 04', title: 'The monitor', note: 'Currently showing: me.', top: true },
-  toolbox: { fig: 'Fig. 05', title: 'The guts', note: 'Fan’s spinning. It’s thinking.' },
-  work: { fig: 'Fig. 06', title: 'The cartridge slot', note: 'One project at a time, like a civilised machine.' },
-  archive: { fig: 'Fig. 07', title: 'The floor', note: 'B-sides, left lying around.' },
-  contact: { fig: 'Fig. 08', title: 'The antenna', note: 'Listening. Go on.' },
+  hero: { text: 'It’s tracking your cursor' },
+  'process-0': { text: 'A first run, and a lot of print statements' },
+  'process-1': { text: 'A noisy signal, and the same one calmed down' },
+  'process-2': { text: 'Ready' },
+  about: { text: 'Twenty-one points on a hand' },
+  toolbox: { text: 'The same list, stepping through' },
+  work: { text: 'Choose a cartridge' },
+  archive: { text: 'The smaller things' },
+  contact: { text: 'Line open' },
 }
 
 export const captionFor = (screen, shot) => CAPTIONS[screen] ?? CAPTIONS[shot]

@@ -1,10 +1,11 @@
 // Clickable pieces of the exhibit and the chapter each one opens.
 // Kept free of three.js imports so the page can read it without loading the 3D chunk.
 export const TARGETS = {
-  about: { label: 'The monitor', nodes: ['Lumen_Monitor_0'] },
-  toolbox: { label: 'The console', nodes: ['Lumen_Video_Game_System_21'] },
-  work: { label: 'The controllers', nodes: ['gamepad_1_15', 'gamepad_2_16'] },
-  contact: { label: 'The antenna', nodes: ['Lumen_TV_35'] },
+  about: { label: 'The monitor', opens: 'About', nodes: ['Lumen_Monitor_0'] },
+  toolbox: { label: 'The console', opens: 'Tools', nodes: ['Lumen_Video_Game_System_21'] },
+  work: { label: 'The controllers', opens: 'Work', nodes: ['gamepad_1_15', 'gamepad_2_16'] },
+  archive: { label: 'The cassettes', opens: 'Smaller things', nodes: ['Bricktris_copy_14', 'Super_Lumia_Bros_26'] },
+  contact: { label: 'The antenna', opens: 'Contact', nodes: ['Lumen_TV_35'] },
 }
 
 // Drag-to-orbit state, shared by the pointer handlers and the camera rig.
