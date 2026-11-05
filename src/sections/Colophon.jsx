@@ -33,6 +33,10 @@ const Colophon = () => (
             >
               Lumen VGS Pack by dark_igorek
             </a>
+            , used under{' '}
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="link">
+              CC BY 4.0
+            </a>
             .
           </p>
           <nav aria-label="Chapters">

@@ -1,6 +1,7 @@
 {
   "name": "3d_portfolio",
   "private": true,
+  "description": "Interactive 3D portfolio of Neelabja Mukhopadhyay, built with React, Three.js and Tailwind CSS.",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

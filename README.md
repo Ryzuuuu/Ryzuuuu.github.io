@@ -8,6 +8,8 @@ Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set 
 
 ## Run it
 
+Needs Node 20.19+ (or 22.12+) and [pnpm](https://pnpm.io) 10.
+
 ```bash
 pnpm install
 pnpm dev          # http://localhost:5173
@@ -18,7 +20,9 @@ pnpm lint
 
 ## Deployment
 
-Live at **https://ryzuuuu.github.io/**. Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which lints, builds and publishes `dist/` to GitHub Pages. In the repo's Pages settings, the source must be **GitHub Actions**. Pull requests run the same checks without publishing.
+Live at **https://ryzuuuu.github.io/**. Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which installs with `pnpm install --frozen-lockfile`, lints, builds and publishes `dist/` to GitHub Pages. Pull requests run the same checks without publishing.
+
+This is a user site (`Ryzuuuu.github.io`), so Vite's default `base: '/'` is correct. Pages must serve the **built** `dist/` folder, not the repo source, so in *Settings → Pages* the source must be set to **GitHub Actions**.
 
 ## Editing content
 
@@ -94,10 +98,6 @@ public/
 - **The model is ~1.2 MB instead of ~20 MB.** The original `scene.gltf` pointed at 32 textures that were never committed, so they 404'd. It was rebuilt as `console.glb` with a flat color palette, no unused UV/tangent data, light simplification, quantization and meshopt compression. drei decodes meshopt out of the box.
 - Respects `prefers-reduced-motion`: no smooth scrolling, parallax or marquees, the camera cuts instead of gliding, and idle motion stops.
 
-## Deploying to GitHub Pages
-
-This is a user site (`Ryzuuuu.github.io`), so Vite's default `base: '/'` is correct. Pages must serve the **built** `dist/` folder, not the repo source. Use a GitHub Actions workflow running `pnpm install --frozen-lockfile && pnpm build` (with `pnpm/action-setup`) with `actions/upload-pages-artifact` + `actions/deploy-pages`, and set *Settings → Pages → Source* to **GitHub Actions**.
-
 ## Credits
 
-3D model: [Lumen VGS Pack](https://sketchfab.com/3d-models/lumen-vgs-pack-f1c6f36076154777809b30a2e1c50ba3) by dark_igorek on Sketchfab. Check the model's license on Sketchfab before you publish.
+3D model: [Lumen VGS Pack](https://sketchfab.com/3d-models/lumen-vgs-pack-f1c6f36076154777809b30a2e1c50ba3) by dark_igorek on Sketchfab, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The copy in `public/console.glb` is a modified version: textures flattened to a colour palette, simplified and compressed (see *Performance notes*).
