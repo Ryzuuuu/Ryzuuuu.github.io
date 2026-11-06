@@ -3,43 +3,64 @@
 @tailwind utilities;
 
 /* ── Palette ──────────────────────────────────────────────────────────────────
-   The console's colours. The 3D scene and the monitor read these through palette.js. */
+   Crisp white, one confident blue, and amber kept small. Chosen by scoring 32,400 combinations
+   for legibility and for how clearly the console stands off the island, then judged on real
+   renders. The 3D scene and the monitor read these through palette.js. */
 :root {
-  --bg-dark: oklch(0.92 0.05 177);
-  --bg: oklch(0.96 0.05 177);
-  --bg-light: oklch(1 0.05 177);
-  --text: oklch(0.15 0.1 177);
-  --text-muted: oklch(0.4 0.1 177);
-  --highlight: oklch(1 0.1 177);
-  --border: oklch(0.6 0.1 177);
-  --border-muted: oklch(0.7 0.1 177);
-  --primary: oklch(0.4 0.1 177);
-  --secondary: oklch(0.4 0.1 357);
-  --danger: oklch(0.5 0.1 30);
-  --warning: oklch(0.5 0.1 100);
-  --success: oklch(0.5 0.1 160);
-  --info: oklch(0.5 0.1 260);
+  --paper: oklch(0.985 0.006 252);
+  --paper-raised: oklch(1 0 0);
+  --deep: oklch(0.2 0.06 252);
+  --ink-deep: oklch(0.18 0.045 252);
+  --stone: oklch(0.45 0.045 252);
+  --haze: oklch(0.8 0.03 252);
+  --brand: oklch(0.45 0.15 252);
+  --amber: oklch(0.78 0.15 75);
+
+  /* The console's finish, painted over the copper in its textures, the way real hi-fi was made:
+     a satin aluminium body, with the small parts you handle in graphite. */
+  --casing: oklch(0.8 0.004 250);
+  --casing-metal: 0.7;
+  --accessory: oklch(0.52 0.006 250);
+  --accessory-metal: 0.35;
+
+  /* The island. */
+  --plinth: oklch(0.1 0.004 252);
+  --inlay: oklch(0.97 0.004 252);
+
+  /* The tube: the only green on the page, so the monitor reads as lit from inside. */
+  --phosphor-bg: oklch(0.15 0.1 177);
+  --phosphor-glow: oklch(0.4 0.1 177);
+  --phosphor: oklch(1 0.1 177);
+  --phosphor-soft: oklch(0.7 0.1 177);
+  --phosphor-faint: oklch(0.6 0.1 177);
 }
 
 /* ── Tone ─────────────────────────────────────────────────────────────────────
-   Chapters are either light (mint) or dark (deep teal). The scroll director flips
+   Chapters are either light (white) or dark (deep blue). The scroll director flips
    `data-tone` on <html>; registering the roles lets the whole page cross-fade. */
-@property --surface { syntax: '<color>'; inherits: true; initial-value: #cffef1; }
-@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: #dcfffe; }
-@property --ink { syntax: '<color>'; inherits: true; initial-value: #00160a; }
-@property --ink-muted { syntax: '<color>'; inherits: true; initial-value: #005847; }
-@property --line { syntax: '<color>'; inherits: true; initial-value: #4eb39d; }
-@property --accent { syntax: '<color>'; inherits: true; initial-value: #005847; }
-@property --glow { syntax: '<color>'; inherits: true; initial-value: #dcfffe; }
+@property --surface { syntax: '<color>'; inherits: true; initial-value: #f8fbfe; }
+@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --ink { syntax: '<color>'; inherits: true; initial-value: #03162a; }
+@property --ink-muted { syntax: '<color>'; inherits: true; initial-value: #3f5a78; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: #c6ccd3; }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #005a9c; }
+@property --glow { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
 
 :root {
-  --surface: var(--bg);
-  --surface-2: var(--bg-light);
-  --ink: var(--text);
-  --ink-muted: var(--text-muted);
-  --line: var(--border-muted);
-  --accent: var(--primary);
-  --glow: var(--bg-light);
+  --surface: var(--paper);
+  --surface-2: var(--paper-raised);
+  --ink: var(--ink-deep);
+  --ink-muted: var(--stone);
+  --line: color-mix(in oklch, var(--ink-deep) 22%, var(--paper));
+  --accent: var(--brand);
+  --glow: var(--paper-raised);
+
+  --logo-back: var(--brand);
+  --logo-middle: oklch(0.62 0.13 245);
+  --logo-front: oklch(0.8 0.08 240);
+  --logo-lens: var(--ink-deep);
+  --logo-glint: oklch(1 0 0);
+  --logo-dial: var(--brand);
 
   --fx: 0.7;
   --fy: 0.5;
@@ -54,13 +75,20 @@
 }
 
 :root[data-tone='dark'] {
-  --surface: var(--text);
-  --surface-2: color-mix(in oklch, var(--text), var(--primary) 22%);
-  --ink: var(--bg);
-  --ink-muted: var(--border-muted);
-  --line: color-mix(in oklch, var(--primary), var(--border) 30%);
-  --accent: var(--highlight);
-  --glow: var(--primary);
+  --surface: var(--deep);
+  --surface-2: color-mix(in oklch, var(--deep), var(--brand) 30%);
+  --ink: var(--paper);
+  --ink-muted: var(--haze);
+  --line: color-mix(in oklch, var(--paper) 20%, var(--deep));
+  --accent: var(--amber);
+  --glow: var(--brand);
+
+  --logo-back: oklch(0.66 0.13 245);
+  --logo-middle: oklch(0.8 0.08 240);
+  --logo-front: oklch(0.92 0.04 240);
+  --logo-lens: var(--ink-deep);
+  --logo-glint: oklch(1 0 0);
+  --logo-dial: oklch(0.8 0.08 240);
 }
 
 @layer base {
@@ -80,14 +108,14 @@
   }
 
   h1, h2, h3 {
-    @apply font-display font-extrabold;
+    @apply font-display font-semibold;
   }
 
   p { text-wrap: pretty; }
 
   ::selection {
-    background: var(--secondary);
-    color: var(--bg-light);
+    background: var(--amber);
+    color: var(--ink-deep);
   }
 
   :focus-visible {
@@ -102,54 +130,50 @@
     @apply w-full px-5 sm:px-8 lg:px-12;
   }
 
+  /* Archivo set slightly wide and tight: the voice of a badge on a piece of hardware. */
   .display-xl,
   .display-lg,
   .display-md {
-    @apply font-display font-extrabold;
+    @apply font-display font-semibold;
+    font-stretch: 112%;
     text-wrap: balance;
   }
   .display-xl {
-    font-size: clamp(3rem, 5.3vw, 8rem);
-    line-height: 0.9;
-    letter-spacing: -0.05em;
+    font-size: clamp(2.75rem, 4.75vw, 7.25rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
   }
   .display-lg {
-    font-size: clamp(2.8rem, 5vw, 5.75rem);
-    line-height: 0.92;
-    letter-spacing: -0.048em;
+    font-size: clamp(2.6rem, 4.4vw, 5.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
   }
   .display-md {
-    font-size: clamp(2rem, 3.2vw, 3.4rem);
-    line-height: 0.96;
-    letter-spacing: -0.04em;
+    font-size: clamp(1.9rem, 2.8vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
   }
 
   .lead {
-    font-size: clamp(1.125rem, 1.35vw, 1.375rem);
-    line-height: 1.45;
+    font-size: clamp(1.125rem, 1.3vw, 1.3125rem);
+    line-height: 1.5;
   }
 
   .summary {
-    @apply font-display font-bold;
-    font-size: clamp(1.45rem, 1.9vw, 1.9rem);
-    line-height: 1.12;
-    letter-spacing: -0.025em;
+    @apply font-display font-medium;
+    font-size: clamp(1.35rem, 1.7vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
   .label {
-    @apply font-mono text-[10.5px] font-medium uppercase tracking-[0.12em];
+    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em];
+    font-stretch: 110%;
   }
 
   .meta {
     font-size: 0.875rem;
-    line-height: 1.4;
-  }
-  .data {
-    @apply font-mono;
-    font-size: 0.6875rem;
-    line-height: 1.6;
-    letter-spacing: -0.01em;
-    font-variant-numeric: tabular-nums;
+    line-height: 1.45;
   }
 
   .btn {
@@ -159,7 +183,7 @@
   .btn-solid { @apply btn bg-ink text-surface; }
   .btn-solid:hover {
     transform: translate(-4px, -4px);
-    box-shadow: 4px 4px 0 0 var(--secondary);
+    box-shadow: 4px 4px 0 0 var(--accent);
   }
   .btn-ghost { @apply btn text-ink hover:bg-ink hover:text-surface; }
   .btn:active { transform: none; box-shadow: none; }
@@ -212,6 +236,116 @@
   html { scroll-padding-top: 50svh; }
 }
 
+/* ── The logo ────────────────────────────────────────────────────────────────────
+   Blooms open on load, its rows of petals turn against each other as the page scrolls, like an
+   aperture, and on hover they open and step round by one blade. */
+.logo {
+  flex: none;
+  width: 1.875rem;
+  height: 1.875rem;
+  overflow: visible;
+}
+.logo__layer--back { transform: rotate(calc(var(--progress) * 180deg)); }
+.logo__layer--middle { transform: rotate(calc(var(--progress) * -135deg)); }
+.logo__layer {
+  transition: rotate 0.9s var(--ease);
+}
+.logo__petal {
+  transition: transform 0.7s var(--ease), fill 0.9s var(--ease-soft);
+  transition-delay: calc(var(--i) * 16ms), 0ms;
+  animation: logo-bloom 1.2s var(--ease) backwards;
+  animation-delay: calc(var(--l) * 160ms + var(--i) * 45ms + 200ms);
+}
+.logo__lens {
+  transition: transform 0.7s var(--ease);
+  animation: logo-bloom 1s var(--ease) 0.1s backwards;
+}
+.logo__lens circle { transition: fill 0.9s var(--ease-soft); }
+@keyframes logo-bloom {
+  from { transform: scale(0.15); opacity: 0; }
+}
+@media (hover: hover) {
+  .logo-link:hover .logo__petal { transform: scale(1.1); }
+  .logo-link:hover .logo__lens { transform: scale(0.84); }
+  .logo-link:hover .logo__layer--back { rotate: 45deg; }
+  .logo-link:hover .logo__layer--middle { rotate: -45deg; }
+}
+
+/* ── The opening screen ──────────────────────────────────────────────────────────
+   Sonar rings spreading out from the island across the page, a soft light that follows the
+   pointer, and layers of copy drifting against it at different depths. */
+.hero-rings {
+  position: fixed;
+  left: calc(var(--fx) * 100%);
+  top: calc(var(--fy) * 100% + 8vh);
+  z-index: -1;
+  width: 0;
+  height: 0;
+  opacity: calc(1 - var(--hero, 0) * 2.5);
+  pointer-events: none;
+}
+.hero-rings > i {
+  position: absolute;
+  left: -40vw;
+  top: -40vw;
+  width: 80vw;
+  height: 80vw;
+  border: 1px solid var(--brand);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sonar 9s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  animation-delay: calc(var(--n) * 2.25s);
+}
+@keyframes sonar {
+  0% { transform: scale(0.45, 0.2); opacity: 0; }
+  12% { opacity: 0.4; }
+  100% { transform: scale(1.7, 0.75); opacity: 0; }
+}
+.cursor-light {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: calc(1 - var(--hero, 0) * 2.5);
+  background: radial-gradient(420px circle at var(--cx, -999px) var(--cy, -999px),
+      color-mix(in oklch, var(--brand) 11%, transparent), transparent 70%);
+}
+.parallax-1,
+.parallax-2,
+.parallax-3 { transition: transform 0.9s var(--ease), opacity 1.4s var(--ease-soft); }
+@media (min-width: 1024px) {
+  .parallax-1 { translate: calc(var(--px, 0) * -9px) calc(var(--py, 0) * -6px); }
+  .parallax-2 { translate: calc(var(--px, 0) * -5px) calc(var(--py, 0) * -3px); }
+  .parallax-3 { translate: calc(var(--px, 0) * -2.5px) calc(var(--py, 0) * -1.5px); }
+  .parallax-1, .parallax-2, .parallax-3 { transition: translate 0.9s var(--ease), transform 1.6s var(--ease), opacity 1.4s var(--ease-soft); }
+}
+.rotator-line {
+  font-size: clamp(1.45rem, 2.3vw, 2.6rem);
+  font-weight: 600;
+  font-stretch: 112%;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+.rotator {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.rotator__word { display: inline-block; white-space: pre; }
+.rotator__char {
+  display: inline-block;
+  white-space: pre;
+  animation: rotor 0.7s var(--ease) both;
+  animation-delay: calc(var(--c) * 28ms);
+}
+@keyframes rotor {
+  from { transform: translate3d(0, 110%, 0); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
 /* ── Atmosphere ──────────────────────────────────────────────────────────────── */
 
 /* A pool of light that follows the console around the screen. */
@@ -260,22 +394,40 @@
   transform: none;
 }
 
-/* Headlines rise line by line out of a mask. */
+/* Headlines: each letter rises out of its line's mask. The mask opens once they've landed, so
+   letters swelling under the pointer aren't clipped. */
 .line-mask {
   display: block;
   overflow: hidden;
   padding-bottom: 0.2em;
   margin-bottom: -0.2em;
 }
-.line-mask > span {
-  display: block;
-  transform: translate3d(0, 112%, 0);
-  transition: transform 1.5s var(--ease);
-  transition-delay: calc(var(--i, 0) * 110ms + var(--delay, 0ms));
+.is-visible .line-mask { animation: mask-open 0s linear 2.2s forwards; }
+@keyframes mask-open { to { overflow: visible; } }
+.line-mask > span { display: block; }
+.word { display: inline-block; white-space: nowrap; }
+.char {
+  display: inline-block;
+  transform: translate3d(0, 118%, 0) rotate(5deg);
+  transform-origin: left bottom;
+  transition: transform 1.15s var(--ease);
+  transition-delay: calc(var(--i, 0) * 90ms + var(--c, 0) * 24ms + var(--delay, 0ms));
 }
-.is-visible .line-mask > span {
-  transform: none;
+.is-visible .char { transform: none; }
+
+/* Fast scrolling leans the headlines, so the type feels the same momentum as the console. */
+.display-lg,
+.display-md {
+  transform: skewY(calc(var(--lean, 0) * 1deg));
+  transform-origin: left center;
 }
+
+/* Paragraphs light up word by word as they're scrolled through. */
+.w {
+  opacity: 0.2;
+  transition: opacity 0.45s var(--ease-soft);
+}
+.w.on { opacity: 1; }
 
 /* Hairlines draw themselves in. */
 .rule {
@@ -305,7 +457,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   :root { transition: none; }
-  .reveal, .line-mask > span, .rule { opacity: 1; transform: none; transition: none; }
+  .logo__layer { transform: none; }
+  .reveal, .char, .w, .rule { opacity: 1; transform: none; transition: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

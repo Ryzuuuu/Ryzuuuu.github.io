@@ -20,13 +20,198 @@ const color = (name) => new THREE.Color().setRGB(...linear(name), THREE.LinearSR
 // coiled lead that belongs to the same mesh drags the centre well away from the antenna.
 const ANTENNA = [2.955, 0.02, -2.24]
 
+// Repaints the copper in the textures with the palette's casing colour. Each pixel is judged by
+// how orange it is, so the labels, sticker art and dark trim stay as painted, and its brightness
+// is kept in part, so the scratches and edge wear survive without looking like dirt.
+const COPPER_LUMA = 0.33
+const tintCasing = (material, casing, metal) => {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uCasing = { value: casing }
+    shader.uniforms.uCasingMetal = { value: metal }
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+uniform vec3 uCasing;
+uniform float uCasingMetal;`)
+      .replace('#include <map_fragment>', `#include <map_fragment>
+float copperMask = smoothstep(0.42, 0.6, (diffuseColor.r - diffuseColor.b) / max(diffuseColor.r, 0.001));
+float copperLuma = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+diffuseColor.rgb = mix(diffuseColor.rgb, uCasing * mix(1.0, min(copperLuma / ${COPPER_LUMA.toFixed(2)}, 1.25), 0.38), copperMask);`)
+      .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+metalnessFactor = mix(metalnessFactor, uCasingMetal, copperMask);`)
+  }
+  material.needsUpdate = true
+}
+
+// The small parts you handle get a darker finish than the body, as on real hi-fi.
+const ACCESSORIES = /^(gamepad|Bricktris|Super_Lumia|Lumen_TV|lent)/
+const isAccessory = (object) => {
+  for (let n = object; n; n = n.parent) if (ACCESSORIES.test(n.name)) return true
+  return false
+}
+const cssNumber = (name) => Number(getComputedStyle(document.documentElement).getPropertyValue(`--${name}`)) || 0
+
+// A soft round pool of light, for the glow the monitor throws onto the island.
+const makePool = () => {
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  const ctx = c.getContext('2d')
+  const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
+  g.addColorStop(0, 'rgba(255,255,255,0.9)')
+  g.addColorStop(0.45, 'rgba(255,255,255,0.3)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 256, 256)
+  return new THREE.CanvasTexture(c)
+}
+
+const tilt = new THREE.Quaternion()
+const euler = new THREE.Euler()
+const padTurn = new THREE.Quaternion()
+const padLift = new THREE.Vector3()
+const padUnit = new THREE.Vector3(1, 1, 1)
+const padScene = new THREE.Matrix4()
+const padToOrigin = new THREE.Matrix4()
+
+// Each controller and its cable are a single mesh, so moving the node drags the whole wire along.
+// Instead the vertex shader moves the controller's body and fades that out with distance, which
+// leaves the plug and the far end of the wire where they are while the near end bends to follow.
+//
+// `dpad` and `buttons` are measured from the mesh, in the node's own frame. `across` and `along`
+// are the directions on the controller's face in that frame.
+const PADS = [
+  {
+    node: 'gamepad_1_15', center: [1.2, 0.12, 2.39], inner: 0.62, outer: 1.55, phase: 0, rock: 1,
+    dpad: [-0.29, 0.1, -0.05], buttons: [0.29, 0.1, -0.05], across: [1, 0, 0], along: [0, 0, 1],
+  },
+  {
+    node: 'gamepad_2_16', center: [2.12, 0.27, 1.2], inner: 1.2, outer: 1.6, phase: 1.9, rock: 0.7,
+    dpad: [-0.29, 0.1, -0.05], buttons: [0.29, 0.1, -0.05], across: [1, 0, 0], along: [0, 0, 1],
+  },
+]
+const PAD_VERTEX = `
+uniform mat4 uPadToScene;
+uniform mat4 uPadMove;
+uniform vec3 uPadCenter;
+uniform vec2 uPadRange;
+varying vec3 vPadScene;
+float padWeight(vec3 p) {
+  return 1.0 - smoothstep(uPadRange.x, uPadRange.y, distance((uPadToScene * vec4(p, 1.0)).xyz, uPadCenter));
+}`
+const PAD_MOVE = `#include <begin_vertex>
+vPadScene = (uPadToScene * vec4(transformed, 1.0)).xyz;
+transformed = mix(transformed, (uPadMove * vec4(transformed, 1.0)).xyz, padWeight(transformed));`
+const PAD_FRAGMENT = `
+uniform vec3 uPressA;
+uniform vec3 uPressB;
+uniform vec2 uPressGlow;
+uniform vec3 uPressColor;
+varying vec3 vPadScene;`
+const PAD_PRESS = `#include <emissivemap_fragment>
+totalEmissiveRadiance += uPressColor * (
+  uPressGlow.x * (1.0 - smoothstep(0.02, 0.12, distance(vPadScene, uPressA))) +
+  uPressGlow.y * (1.0 - smoothstep(0.02, 0.12, distance(vPadScene, uPressB))));`
+
+// The four directions a thumb can press, as steps across and along the controller's face.
+const PRESSES = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+const COMBO_LEFT = [0, 0, 3, 1, 2, 1, 3, 0]
+const COMBO_RIGHT = [1, 3, 1, 2, 0, 1, 1, 3]
+
+const makePadRig = (scene, toLocal, { node: name, center, inner, outer, phase, rock, dpad, buttons, across, along }) => {
+  const node = scene.getObjectByName(name)
+  const mesh = node?.getObjectByProperty('isMesh', true)
+  if (!mesh) return null
+  const toScene = toLocal.clone().multiply(mesh.matrixWorld)
+  const nodeToScene = toLocal.clone().multiply(node.matrixWorld)
+  const centre = new THREE.Vector3(...center)
+  const uniforms = {
+    uPadToScene: { value: toScene },
+    uPadMove: { value: new THREE.Matrix4() },
+    uPadCenter: { value: centre },
+    uPadRange: { value: new THREE.Vector2(inner, outer) },
+    uPressA: { value: new THREE.Vector3() },
+    uPressB: { value: new THREE.Vector3() },
+    uPressGlow: { value: new THREE.Vector2() },
+    uPressColor: { value: color('amber').multiplyScalar(2.4) },
+  }
+  const patchVertex = (shader) => {
+    Object.assign(shader.uniforms, uniforms)
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>${PAD_VERTEX}`)
+      .replace('#include <begin_vertex>', PAD_MOVE)
+  }
+  const material = mesh.material
+  const tint = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    tint(shader, renderer)
+    patchVertex(shader)
+    shader.vertexShader = shader.vertexShader.replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+objectNormal = normalize(mix(objectNormal, mat3(uPadMove) * objectNormal, padWeight(position)));`)
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>${PAD_FRAGMENT}`)
+      .replace('#include <emissivemap_fragment>', PAD_PRESS)
+  }
+  material.needsUpdate = true
+  // Its shadow has to move with it.
+  mesh.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking })
+  mesh.customDepthMaterial.onBeforeCompile = patchVertex
+
+  const fromScene = toScene.clone().invert()
+  const dir = (v) => new THREE.Vector3(...v)
+  const press = (out, base, combo, tick, reach) => {
+    const [u, v] = PRESSES[combo[tick % combo.length]]
+    out.copy(base).addScaledVector(acrossDir, u * reach).addScaledVector(alongDir, v * reach).applyMatrix4(nodeToScene)
+  }
+  const dpadAt = dir(dpad)
+  const buttonsAt = dir(buttons)
+  const acrossDir = dir(across)
+  const alongDir = dir(along)
+
+  // Being played: it stays on the table, rocks in an unseen grip and nods with each press, while
+  // the d-pad and the face buttons light up in rhythm.
+  const update = (level, t) => {
+    const left = t * 3.6 + phase
+    const right = t * 5.2 + phase
+    const hitL = (1 - (left % 1)) ** 2
+    const hitR = (1 - (right % 1)) ** 2
+    press(uniforms.uPressA.value, dpadAt, COMBO_LEFT, Math.floor(left), 0.085)
+    press(uniforms.uPressB.value, buttonsAt, COMBO_RIGHT, Math.floor(right), 0.085)
+    uniforms.uPressGlow.value.set(hitL * level, hitR * level)
+
+    const lean = Math.sin(t * 2.3 + phase)
+    euler.set(
+      level * rock * (Math.sin(t * 3.1 + phase) * 0.12 + hitR * 0.05),
+      level * rock * lean * 0.3,
+      level * rock * (lean * 0.1 - hitL * 0.04),
+    )
+    padTurn.setFromEuler(euler)
+    padLift.set(0, level * rock * 0.09, 0).add(centre)
+    padScene.compose(padLift, padTurn, padUnit).multiply(padToOrigin.makeTranslation(-centre.x, -centre.y, -centre.z))
+    uniforms.uPadMove.value.copy(fromScene).multiply(padScene).multiply(toScene)
+  }
+  return { update, material }
+}
+
+// Remembers where a node rests, so a hover can move it and always come back.
+const rest = (scene, name) => {
+  const node = scene.getObjectByName(name)
+  return node ? { node, position: node.position.clone(), quaternion: node.quaternion.clone() } : null
+}
+
 // Texture slots worth sharpening at the grazing angles the camera keeps visiting.
 const MAPS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap']
 
 // The "how I work" steps render the console as a wireframe, then clay, then finished.
 const MODE_FOR = { 'process-0': 'wire', 'process-1': 'clay' }
 
-// Mutating the cached GLTF scene once is intentional: it is only ever mounted here.
+// Mutating the cached GLTF scene is intentional, and it must only happen once per scene: the
+// animations hold on to the materials made here, so a second pass would leave them driving copies
+// that are no longer on screen. React's strict mode does call this twice.
+const prepared = new WeakMap()
+const prepareOnce = (scene) => {
+  if (!prepared.has(scene)) prepared.set(scene, prepareScene(scene))
+  return prepared.get(scene)
+}
+
 const prepareScene = (scene) => {
   scene.traverse((o) => {
     if (!o.isMesh) return
@@ -83,33 +268,54 @@ const prepareScene = (scene) => {
     m.emissiveIntensity = 0
   }
 
-  // Every mesh with its finished material, plus the two stand-ins for the process steps.
+  // Every mesh with its finished material, plus the two stand-ins for the process steps. The
+  // tint goes on here, after the clones above: a clone doesn't keep a shader patch.
+  const finish = {
+    body: { color: color('casing'), metal: cssNumber('casing-metal') },
+    small: { color: color('accessory'), metal: cssNumber('accessory-metal') },
+  }
   const meshes = []
-  scene.traverse((o) => { if (o.isMesh) meshes.push({ mesh: o, finished: o.material }) })
+  scene.traverse((o) => {
+    if (!o.isMesh) return
+    if (o.material.map && !o.material.transparent) {
+      const { color: paint, metal } = isAccessory(o) ? finish.small : finish.body
+      tintCasing(o.material, paint, metal)
+    }
+    meshes.push({ mesh: o, finished: o.material })
+  })
   const looks = {
-    wire: new THREE.MeshBasicMaterial({ color: color('highlight'), wireframe: true, transparent: true, opacity: 0.5, toneMapped: false }),
+    wire: new THREE.MeshBasicMaterial({ color: color('phosphor'), wireframe: true, transparent: true, opacity: 0.5, toneMapped: false }),
     clay: new THREE.MeshStandardMaterial({ color: '#b9a48f', roughness: 0.9, metalness: 0 }),
   }
 
   // The cartridge sitting in the console's bay; it reseats itself for each work.
   const cart = scene.getObjectByName('Bricktris_9')
 
-  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks }
+  // The parts the hover animations move.
+  const pads = PADS.map((pad) => makePadRig(scene, toLocal, pad)).filter(Boolean)
+  const tapes = ['Bricktris_copy_14', 'Super_Lumia_Bros_26'].map((n) => rest(scene, n)).filter(Boolean)
+  const reels = ['lent_big_12', 'lent_small_13', 'lent_big001_24', 'lent_small001_25']
+    .map((n) => scene.getObjectByName(n)).filter(Boolean)
+
+  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks, pads, tapes, reels }
 }
 
 const ConsoleModel = ({ onSelect }) => {
   const { scene, animations } = useGLTF(MODEL_URL)
   const { actions } = useAnimations(animations, scene)
-  const { proxies, glow, glass, cart, cartY, meshes, looks } = useMemo(() => prepareScene(scene), [scene])
+  const { proxies, glow, glass, cart, cartY, meshes, looks, pads, tapes, reels } = useMemo(() => prepareOnce(scene), [scene])
+  const pool = useMemo(() => makePool(), [])
+  const spill = useRef()
+  const spillLight = useRef()
   const powered = useRef(false)
   const scanner = useRef()
   const gl = useThree((s) => s.gl)
 
-  const state = useRef({ boot: 0, flash: null, flashT: 0, press: null, screen: null, hop: 1, mode: 'full', scan: 1 })
+  const state = useRef({ boot: 0, flash: null, flashT: 0, press: null, screen: null, hop: 1, mode: 'full', scan: 1, over: { about: 0, toolbox: 0, work: 0, archive: 0 } })
   const selectRef = useRef(onSelect)
   useEffect(() => { selectRef.current = onSelect }, [onSelect])
 
-  useEffect(() => () => { looks.wire.dispose(); looks.clay.dispose() }, [looks])
+  useEffect(() => () => { looks.wire.dispose(); looks.clay.dispose(); pool.dispose() }, [looks, pool])
 
   // The baked clip spins the fan, rollers and reels and runs the loading bar. It idles slowly
   // and runs at full speed while the Toolbox chapter is looking at the mechanism.
@@ -198,11 +404,43 @@ const ConsoleModel = ({ onSelect }) => {
     const breathe = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(t * 2.4)
     for (const [id, mats] of Object.entries(glow)) {
       const target =
-        (chapter === id ? 0.015 + breathe * 0.03 : 0) + (hovered === id ? 0.16 : 0) + (s.flash === id ? s.flashT * 0.7 : 0)
+        (chapter === id ? 0.004 + breathe * 0.006 : 0) + (hovered === id ? 0.012 : 0) + (s.flash === id ? s.flashT * 0.18 : 0)
       for (const m of mats) m.emissiveIntensity = damp(m.emissiveIntensity, target, 8, dt)
     }
 
-    if (clip) clip.timeScale = damp(clip.timeScale, chapter === 'toolbox' ? 1.4 : 0.2, 2, dt)
+    // Each piece answers a hover in its own way; the antenna's rings live in Signal.
+    const over = s.over
+    for (const id of Object.keys(over)) over[id] = damp(over[id], hovered === id && !reducedMotion ? 1 : 0, 6, dt)
+
+    // The monitor throws its light: green across the island in front of it, and onto the console.
+    if (spill.current) {
+      spill.current.visible = over.about > 0.01
+      spill.current.material.opacity = over.about * 0.5
+      spillLight.current.intensity = over.about * 14
+    }
+
+    // The controllers get played: they rock on the table while their buttons light up in rhythm.
+    if (over.work > 0.002 || s.padsMoved) {
+      for (const pad of pads) pad.update(over.work, t)
+      s.padsMoved = over.work > 0.002
+    }
+
+    // The cassettes float up and turn towards you, with their reels running.
+    tapes.forEach((tape, i) => {
+      if (over.archive < 0.002) {
+        tape.node.position.copy(tape.position)
+        tape.node.quaternion.copy(tape.quaternion)
+        return
+      }
+      tape.node.position.y = tape.position.y + over.archive * (i === 0 ? 0.55 : 0.32) + Math.sin(t * 2.2 + i) * 0.035 * over.archive
+      euler.set(i === 0 ? over.archive * 0.5 : 0, Math.sin(t * 1.3 + i) * 0.28 * over.archive, 0)
+      tilt.setFromEuler(euler)
+      tape.node.quaternion.copy(tape.quaternion).premultiply(tilt)
+    })
+    if (over.archive > 0.002) for (const reel of reels) reel.rotateY(dt * 7 * over.archive)
+
+    // The console runs up: the mechanism spins hard and the cartridge rises out of its bay.
+    if (clip) clip.timeScale = damp(clip.timeScale, hovered === 'toolbox' && !reducedMotion ? 3 : chapter === 'toolbox' ? 1.4 : 0.2, 3, dt)
 
     // Each new work reseats the cartridge: it lifts out of the bay and drops back in.
     if (screen !== s.screen) {
@@ -211,8 +449,8 @@ const ConsoleModel = ({ onSelect }) => {
     }
     if (cart) {
       s.hop = Math.min(1, s.hop + dt * 1.4)
-      const lift = Math.sin(Math.PI * Math.min(1, s.hop * 1.15)) ** 2
-      cart.position.y = cartY + lift * 0.42
+      const lift = Math.max(Math.sin(Math.PI * Math.min(1, s.hop * 1.15)) ** 2, over.toolbox)
+      cart.position.y = cartY + lift * 0.5 + Math.sin(t * 2.4) * 0.025 * over.toolbox
       cart.rotation.z = lift * 0.12
     }
   })
@@ -231,9 +469,14 @@ const ConsoleModel = ({ onSelect }) => {
       <primitive object={scene} />
       <MonitorScreen position={[-0.025, 1.9, -2.74]} size={[2.3, 1.56]} powered={powered} />
       <Signal position={ANTENNA} />
+      <pointLight ref={spillLight} position={[0, 1.7, -1.9]} intensity={0} distance={7} decay={1.4} color={color('phosphor')} />
+      <mesh ref={spill} rotation-x={-Math.PI / 2} position={[0, 0.014, -1.25]} visible={false}>
+        <planeGeometry args={[6, 3.6]} />
+        <meshBasicMaterial map={pool} color={color('phosphor')} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
       <mesh ref={scanner} rotation-x={-Math.PI / 2} position={[0, 0, -1.15]} visible={false}>
         <ringGeometry args={[3.9, 4.0, 128]} />
-        <meshBasicMaterial color={color('highlight')} transparent opacity={0} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color={color('phosphor')} transparent opacity={0} depthWrite={false} toneMapped={false} />
       </mesh>
       {proxies.map((p) => (
         <mesh key={p.key} position={p.center} {...handlers(p.id)}>

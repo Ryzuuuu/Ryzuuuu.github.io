@@ -20,13 +20,13 @@ const makeFalloff = () => {
   return new THREE.CanvasTexture(c)
 }
 
-// The island: a deep-teal slab with a bright lip and a wine-red inlay. Underneath, a soft
+// The island: a black slab with a bright lip and a white inlay. Underneath, a soft
 // pool that reads as a shadow on light chapters and as a glow on dark ones.
 const Plinth = () => {
   const falloff = useMemo(() => makeFalloff(), [])
   const pool = useRef()
-  const tones = useMemo(() => ({ light: color('text'), dark: color('primary') }), [])
-  const paint = useMemo(() => ({ slab: color('primary'), lip: color('highlight'), inlay: color('secondary') }), [])
+  const tones = useMemo(() => ({ light: color('ink-deep'), dark: color('brand') }), [])
+  const paint = useMemo(() => ({ slab: color('plinth'), lip: color('paper-raised'), inlay: color('inlay') }), [])
   useEffect(() => () => falloff.dispose(), [falloff])
 
   useFrame((_, delta) => {

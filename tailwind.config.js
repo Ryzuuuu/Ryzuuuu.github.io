@@ -16,9 +16,8 @@ export default {
         accent: token('accent'),
       },
       fontFamily: {
-        display: ['"Bricolage Grotesque"', '"Arial Black"', 'sans-serif'],
-        sans: ['"Schibsted Grotesk"', 'system-ui', 'sans-serif'],
-        mono: ['"Martian Mono"', 'ui-monospace', 'monospace'],
+        display: ['Archivo', 'system-ui', 'sans-serif'],
+        sans: ['Archivo', 'system-ui', 'sans-serif'],
         bengali: ['"Tiro Bangla"', 'serif'],
       },
       screens: {

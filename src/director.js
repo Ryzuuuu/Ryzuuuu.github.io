@@ -55,7 +55,7 @@ export const lockScroll = (locked) => {
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const smooth = (t) => t * t * (3 - 2 * t)
 const read = (el, local) => ({ shot: el.dataset.shot, param: Number(el.dataset.param ?? 0), local })
-const TONE_COLOR = { light: '#cffef1', dark: '#00160a' }
+const TONE_COLOR = { light: '#f8fbfe', dark: '#031a31' }
 // The opening shot's copy and console already sit apart, so nothing needs veiling.
 const scrimFor = (shot) => (shot === 'hero' ? 0 : 1)
 
@@ -137,17 +137,24 @@ export const startDirector = () => {
     const y = window.scrollY
     const max = root.scrollHeight - vh
     root.style.setProperty('--progress', (max > 0 ? clamp01(y / max) : 0).toFixed(4))
+    root.style.setProperty('--hero', clamp01(y / vh).toFixed(4))
   }
 
   // ── The loop ────────────────────────────────────────────────────────────────
   let raf = 0
   let lastY = -1
+  let lastLean = 0
   let dirty = true
   const loop = (t) => {
     lenis?.raf(t)
     const y = window.scrollY
     const raw = lenis ? lenis.velocity : y - (lastY < 0 ? y : lastY)
     director.velocity += (raw - director.velocity) * 0.2
+    const lean = reducedMotion ? 0 : Math.max(-2.4, Math.min(2.4, director.velocity * 0.07))
+    if (Math.abs(lean - lastLean) > 0.01) {
+      lastLean = lean
+      root.style.setProperty('--lean', lean.toFixed(3))
+    }
     if (y !== lastY || dirty) {
       updateShots()
       lastY = y

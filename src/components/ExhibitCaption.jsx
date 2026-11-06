@@ -24,7 +24,7 @@ const ExhibitCaption = () => {
     >
       <div key={`${screen}|${hovered}`} className="swap-in max-w-[22rem] bg-surface px-3.5 py-2.5">
         <p className="meta text-muted">{heading}</p>
-        <p className="mt-0.5 font-display text-[1.0625rem] leading-snug text-ink font-bold">{text}</p>
+        <p className="mt-0.5 font-display text-[1.0625rem] leading-snug text-ink font-semibold">{text}</p>
       </div>
     </aside>
   )

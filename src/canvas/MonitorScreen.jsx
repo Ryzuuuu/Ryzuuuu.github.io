@@ -13,11 +13,11 @@ const TRAIL = 42
 
 // Monochrome teal phosphor, mixed from the palette.
 const makeInk = () => ({
-  bg: rgb('text'),
-  glow: rgb('primary', 0.4),
-  fg: rgb('highlight'),
-  soft: rgb('border-muted'),
-  faint: rgb('border', 0.4),
+  bg: rgb('phosphor-bg'),
+  glow: rgb('phosphor-glow', 0.4),
+  fg: rgb('phosphor'),
+  soft: rgb('phosphor-soft'),
+  faint: rgb('phosphor-faint', 0.4),
 })
 
 const layer = (paint) => {
@@ -36,6 +36,8 @@ const makePointer = () => ({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, seen: false, dwel
 const MonitorScreen = ({ position, size, powered }) => {
   const mesh = useRef()
   const mat = useRef()
+  const sweep = useRef()
+  const sweepGlow = useRef()
   const tube = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = W
@@ -71,7 +73,7 @@ const MonitorScreen = ({ position, size, powered }) => {
     return { ctx, texture, ink, back, glass, bloom, bloomCtx: bloom.getContext('2d'), canvas, draw: makeInstruments(ctx, ink) }
   }, [])
   const pointer = useMemo(() => makePointer(), [])
-  const state = useRef({ start: null, key: '', shown: null, switchT: 1, lastTrail: 0 })
+  const state = useRef({ start: null, key: '', shown: null, switchT: 1, lastTrail: 0, hover: 0 })
 
   useEffect(() => {
     // Redraw once the web fonts arrive so the screen doesn't keep the fallback fonts.
@@ -120,7 +122,19 @@ const MonitorScreen = ({ position, size, powered }) => {
     const elapsed = t - s.start
 
     // Channel change: the picture collapses to a line, swaps, and opens back up.
-    const { screen } = getSnapshot()
+    const { screen, hovered } = getSnapshot()
+    s.hover = THREE.MathUtils.damp(s.hover, hovered === 'about' && !reducedMotion ? 1 : 0, 6, Math.min(delta, 0.1))
+    if (sweep.current) {
+      // Hovering the monitor sends a refresh line rolling down the tube.
+      const y = (0.5 - ((t * 0.62) % 1)) * size[1]
+      const on = s.hover > 0.01
+      sweep.current.visible = on
+      sweepGlow.current.visible = on
+      sweep.current.position.y = y
+      sweepGlow.current.position.y = y
+      sweep.current.material.opacity = s.hover * 0.85
+      sweepGlow.current.material.opacity = s.hover * 0.22
+    }
     if (s.shown === null) s.shown = screen
     if (screen !== s.shown) {
       if (reducedMotion) s.shown = screen
@@ -132,7 +146,7 @@ const MonitorScreen = ({ position, size, powered }) => {
     if (mesh.current) mesh.current.scale.y = Math.max(0.012, squash)
 
     const flicker = elapsed < 0.5 ? (Math.random() > 0.4 ? 1 : 0.25) : 1
-    mat.current?.color.setScalar(flicker * (0.65 + 0.35 * squash) + (1 - squash) * 0.6)
+    mat.current?.color.setScalar(flicker * (0.65 + 0.35 * squash) + (1 - squash) * 0.6 + s.hover * 0.28)
 
     // The tracker lags a little behind the pointer; with no pointer (phones), it hunts.
     pointer.dwell += delta
@@ -162,6 +176,14 @@ const MonitorScreen = ({ position, size, powered }) => {
     <mesh ref={mesh} position={position}>
       <planeGeometry args={size} />
       <meshBasicMaterial ref={mat} map={tube.texture} toneMapped={false} />
+      <mesh ref={sweepGlow} position={[0, 0, 0.004]} visible={false}>
+        <planeGeometry args={[size[0], 0.2]} />
+        <meshBasicMaterial color={rgb('phosphor')} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh ref={sweep} position={[0, 0, 0.006]} visible={false}>
+        <planeGeometry args={[size[0], 0.022]} />
+        <meshBasicMaterial color={rgb('phosphor')} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
     </mesh>
   )
 }

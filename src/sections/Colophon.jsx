@@ -56,7 +56,7 @@ const Colophon = () => (
         </p>
         <a
           href={`mailto:${profile.email}`}
-          className="link mt-5 inline-block font-display text-[clamp(1.0625rem,1.42vw,1.75rem)] font-bold tracking-[-0.025em]"
+          className="link mt-5 inline-block font-display text-[clamp(1.0625rem,1.42vw,1.75rem)] font-semibold tracking-[-0.025em]"
         >
           {profile.email}
         </a>
@@ -78,7 +78,7 @@ const Colophon = () => (
           <Column title="Console model">
             <p className="text-muted">
               <a href={MODEL} target="_blank" rel="noreferrer" className="link text-ink">Lumen VGS Pack by dark_igorek</a>,{' '}
-              <a href={LICENCE} target="_blank" rel="noreferrer" className="link text-ink">CC BY 4.0</a>
+              <a href={LICENCE} target="_blank" rel="noreferrer" className="link text-ink">CC BY 4.0</a>, recoloured
             </p>
           </Column>
         </div>

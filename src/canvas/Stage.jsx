@@ -3,7 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, Lightformer, PerformanceMonitor, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 import { director, goTo, setHovered } from '../director'
-import { linear, rgb } from '../palette'
+import { rgb } from '../palette'
 import ExhibitLoader from '../components/ExhibitLoader'
 import CameraRig from './CameraRig'
 import ConsoleModel from './ConsoleModel'
@@ -12,7 +12,6 @@ import { focus } from './targets'
 
 const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const { damp, clamp } = THREE.MathUtils
-const color = (name) => new THREE.Color().setRGB(...linear(name), THREE.LinearSRGBColorSpace)
 // Rendering the shadow pass every frame is fine on a desktop GPU, less so on a phone.
 const shadows = typeof window !== 'undefined' && !window.matchMedia('(pointer: coarse)').matches
 
@@ -53,13 +52,13 @@ const Island = () => {
       <group position={[0, 0, 1.15]}>
         <ConsoleModel onSelect={goTo} />
       </group>
-      <ContactShadows position={[0, 0.006, 0]} opacity={0.55} scale={11} blur={2.4} far={2.4} resolution={512} frames={1} color={rgb('text')} />
+      <ContactShadows position={[0, 0.006, 0]} opacity={0.55} scale={11} blur={2.4} far={2.4} resolution={512} frames={1} color={rgb('ink-deep')} />
     </group>
   )
 }
 
 const Lights = () => {
-  const c = useMemo(() => ({ bounce: color('primary') }), [])
+  const c = useMemo(() => ({ bounce: new THREE.Color('#4a4a4a') }), [])
   return (
     <>
       <ambientLight intensity={0.16} />
@@ -81,11 +80,11 @@ const Lights = () => {
         shadow-camera-far={32}
       />
       {/* Cool kicker from behind, to pull the casing off the page. */}
-      <directionalLight position={[7, 7, -9]} intensity={1.1} color="#d5f4ff" />
+      <directionalLight position={[7, 7, -9]} intensity={1.1} color="#e6eef2" />
       <FollowSpot />
       <Environment resolution={256} frames={1} environmentIntensity={1.15}>
         {/* The casing is metallic, so its colour is mostly what it reflects: give it a whole room. */}
-        <color attach="background" args={['#7d8f88']} />
+        <color attach="background" args={['#8a877d']} />
         <Lightformer form="rect" intensity={2.4} position={[0, 7, 3]} rotation-x={-Math.PI / 2.4} scale={[12, 5, 1]} />
         <Lightformer form="rect" intensity={1.3} color="#ffe6cf" position={[-8, 2.5, 2]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} />
         <Lightformer form="rect" intensity={0.9} position={[8, 2.5, -1]} rotation-y={-Math.PI / 2} scale={[6, 4, 1]} />

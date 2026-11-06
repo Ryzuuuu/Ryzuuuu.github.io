@@ -11,10 +11,10 @@ export const W = 1024
 export const H = 694
 const M = 64
 
-const serif = (px, weight = 700) => `${weight} ${px}px "Bricolage Grotesque", "Arial Black", sans-serif`
+const display = (px, weight = 600) => `${weight} ${px}px Archivo, system-ui, sans-serif`
 // The screen is seen small, so the fine print is set larger than it looks like it should be.
-const mono = (px, weight = 400) => `${weight} ${px}px "Martian Mono", ui-monospace, monospace`
-export const FONTS = [serif(64), mono(20), mono(20, 500)]
+const small = (px, weight = 500) => `${weight} ${px}px Archivo, system-ui, sans-serif`
+export const FONTS = [display(64), small(20), small(20, 500)]
 
 const TAU = Math.PI * 2
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
@@ -25,7 +25,7 @@ const pad = (n, l = 2) => String(n).padStart(l, '0')
 const wob = (t, s = 0) => Math.sin(t * 1.3 + s) * 0.5 + Math.sin(t * 2.9 + s * 2.1) * 0.3 + Math.sin(t * 7.1 + s * 3.7) * 0.2
 
 const kit = (ctx, ink) => {
-  const text = (str, x, y, { font = mono(19), color = ink.fg, align = 'left', spacing = 0 } = {}) => {
+  const text = (str, x, y, { font = small(19), color = ink.fg, align = 'left', spacing = 0 } = {}) => {
     ctx.font = font
     ctx.textAlign = align
     if ('letterSpacing' in ctx) ctx.letterSpacing = `${spacing}px`
@@ -62,12 +62,12 @@ const kit = (ctx, ink) => {
   // Title strip, and an optional line at the bottom.
   const chrome = (left, right, foot) => {
     // Big enough to tell at a glance which screen is up, even with the whole island in view.
-    text(left, M, 76, { font: serif(50), spacing: -1 })
-    if (right) text(right, W - M, 74, { font: mono(20), color: ink.soft, align: 'right', spacing: 1 })
+    text(left, M, 76, { font: display(50), spacing: -1 })
+    if (right) text(right, W - M, 74, { font: small(20), color: ink.soft, align: 'right', spacing: 1 })
     rect(M, 92, W - M * 2, 1.5, ink.faint)
     if (foot) {
       rect(M, H - 88, W - M * 2, 1.5, ink.faint)
-      text(foot, M, H - 54, { font: mono(17), color: ink.soft, spacing: 1 })
+      text(foot, M, H - 54, { font: small(17), color: ink.soft, spacing: 1 })
     }
   }
   // Corner marks of a detection box.
@@ -117,7 +117,7 @@ const hand = (k, ink, cx, cy, s, curl, t, { numbers = false } = {}) => {
   k.line([wrist, knuckles[0], knuckles[1], knuckles[2], knuckles[3], knuckles[4], wrist], { color: ink.soft, width: 3 })
   points.forEach(([x, y], i) => {
     k.dot(x, y, i === 0 ? 8 : 6)
-    if (numbers) k.text(String(i), x + 11, y - 8, { font: mono(13), color: ink.soft })
+    if (numbers) k.text(String(i), x + 11, y - 8, { font: small(13), color: ink.soft })
   })
 }
 
@@ -159,7 +159,7 @@ export const makeInstruments = (ctx, ink) => {
         ring(cx, cy, sweep, ink.faint, 2, -Math.PI / 2 + a0, -Math.PI / 2 + a1)
         const lx = cx + Math.sin(c.a) * (R + 26)
         const ly = cy - Math.cos(c.a) * (R + 26)
-        text(`${c.name} ${d.toFixed(2)} m`, lx, ly, { font: mono(18), align: 'center', color: pulse ? ink.fg : ink.soft })
+        text(`${c.name} ${d.toFixed(2)} m`, lx, ly, { font: small(18), align: 'center', color: pulse ? ink.fg : ink.soft })
         // Haptic motor.
         const mx = cx - 120 + i * 120
         const on = pulse && Math.floor(t * 10) % 2 === 0
@@ -167,7 +167,7 @@ export const makeInstruments = (ctx, ink) => {
       })
       const alert = centreTTC < 1
       text(alert ? '“Obstacle ahead”' : `${Math.min(centreTTC, 9.9).toFixed(1)} s`, cx, cy - 46, {
-        font: serif(alert ? 44 : 58), align: 'center',
+        font: display(alert ? 44 : 58), align: 'center',
       })
     },
 
@@ -184,14 +184,14 @@ export const makeInstruments = (ctx, ink) => {
       rows.forEach((r, i) => {
         const y = 150 + i * 152
         const reveal = smooth(clamp((((t * 0.28) % 1.3) - i * 0.12) * 2.4))
-        text(r.label, x0, y, { font: serif(38) })
+        text(r.label, x0, y, { font: display(38) })
         ;[[r.a, r.av], [r.b, r.bv]].forEach(([name, v], j) => {
           const by = y + 22 + j * 38
           const w = bw * (v / r.max) * reveal
-          text(name.toUpperCase(), x0, by + 21, { font: mono(15), color: ink.soft, spacing: 1 })
+          text(name.toUpperCase(), x0, by + 21, { font: small(15), color: ink.soft, spacing: 1 })
           rect(x0 + 100, by + 4, Math.max(2, w), 22, j ? ink.fg : ink.soft)
           const shown = (v * reveal).toLocaleString('en-US', { minimumFractionDigits: r.fix ?? 0, maximumFractionDigits: r.fix ?? 0 })
-          text(`${shown}${r.unit}`, x0 + 100 + bw + 76, by + 22, { font: mono(19), align: 'right' })
+          text(`${shown}${r.unit}`, x0 + 100 + bw + 76, by + 22, { font: small(19), align: 'right' })
         })
       })
     },
@@ -217,18 +217,18 @@ export const makeInstruments = (ctx, ink) => {
       ]
       bars.forEach((b, i) => {
         const y = 382 + i * 50
-        text(b.name, M, y + 8, { font: mono(17), color: ink.soft, spacing: 1 })
+        text(b.name, M, y + 8, { font: small(17), color: ink.soft, spacing: 1 })
         rect(M + 165, y, 300, 2, ink.faint)
         rect(M + 165, y - 6, 300 * clamp(b.v / b.scale), 14)
-        text(`${b.v.toFixed(2)}${b.unit}`, M + 590, y + 8, { font: mono(18), align: 'right' })
+        text(`${b.v.toFixed(2)}${b.unit}`, M + 590, y + 8, { font: small(18), align: 'right' })
       })
       const rx = W - M - 112
       const ry = 462
       const p = clamp(secs / 90)
       ring(rx, ry, 96, ink.faint, 6)
       ring(rx, ry, 96, ink.fg, 6, -Math.PI / 2, -Math.PI / 2 + TAU * p)
-      text(`${pad(Math.floor(secs))}`, rx, ry + 12, { font: serif(70), align: 'center' })
-      text('SECONDS', rx, ry + 42, { font: mono(13), color: ink.soft, align: 'center', spacing: 1.5 })
+      text(`${pad(Math.floor(secs))}`, rx, ry + 12, { font: display(70), align: 'center' })
+      text('SECONDS', rx, ry + 42, { font: small(13), color: ink.soft, align: 'center', spacing: 1.5 })
     },
 
     // A floor from a store_layout.json. The foot of the box decides the zone; staff excluded.
@@ -248,7 +248,7 @@ export const makeInstruments = (ctx, ink) => {
         ctx.strokeStyle = ink.faint
         ctx.lineWidth = 1.5
         ctx.strokeRect(fx + z.x * fw, fy + z.y * fh, z.w * fw, z.h * fh)
-        text(z.n, fx + z.x * fw + 10, fy + z.y * fh + 24, { font: mono(13), color: ink.soft, spacing: 1 })
+        text(z.n, fx + z.x * fw + 10, fy + z.y * fh + 24, { font: small(13), color: ink.soft, spacing: 1 })
       })
       const people = [...Array(8)].map((_, i) => {
         const s = i * 2.13 + 0.4
@@ -271,15 +271,15 @@ export const makeInstruments = (ctx, ink) => {
         if (z && !p.staff) counts[z.n] = (counts[z.n] ?? 0) + 1
         brackets(p.x - w / 2, p.y - h, w, h, 9, p.staff ? ink.faint : ink.fg, 2)
         dot(p.x, p.y, 4, p.staff ? ink.faint : ink.fg)
-        text(p.staff ? 'STF' : `${pad(p.i + 11)}`, p.x - w / 2, p.y - h - 6, { font: mono(13), color: p.staff ? ink.faint : ink.soft })
+        text(p.staff ? 'STF' : `${pad(p.i + 11)}`, p.x - w / 2, p.y - h - 6, { font: small(13), color: p.staff ? ink.faint : ink.soft })
       })
       // The side panel: zone counts, then an event feed that follows from them.
       const lx = fx + fw + 28
       const lw = W - M - lx
       zones.forEach((z, i) => {
         const y = 136 + i * 32
-        text(z.n, lx, y, { font: mono(15), color: ink.soft })
-        text(pad(counts[z.n] ?? 0), lx + lw, y, { font: mono(17), align: 'right' })
+        text(z.n, lx, y, { font: small(15), color: ink.soft })
+        text(pad(counts[z.n] ?? 0), lx + lw, y, { font: small(17), align: 'right' })
       })
       rect(lx, 262, lw, 1.5, ink.faint)
       const KINDS = ['ENTRY', 'ZONE_ENTER', 'ZONE_DWELL', 'ZONE_EXIT', 'BILLING_QUEUE_JOIN', 'EXIT', 'REENTRY', 'BILLING_QUEUE_ABANDON']
@@ -287,7 +287,7 @@ export const makeInstruments = (ctx, ink) => {
       for (let i = 0; i < 9; i++) {
         const n = step - i
         const kind = KINDS[Math.abs((n * 7 + (n >> 2)) % KINDS.length)]
-        text(kind.length > 16 ? `${kind.slice(0, 15)}.` : kind, lx, 292 + i * 31, { font: mono(14), color: i ? ink.soft : ink.fg })
+        text(kind.length > 16 ? `${kind.slice(0, 15)}.` : kind, lx, 292 + i * 31, { font: small(14), color: i ? ink.soft : ink.fg })
       }
     },
 
@@ -325,9 +325,9 @@ export const makeInstruments = (ctx, ink) => {
       const ay = py(late(p))
       dot(ax, ay, 7)
       ring(ax, ay, 15 + ((t * 18) % 16), ink.faint, 2)
-      text('3.0° IDLE', px(0.62), py(0.56), { font: mono(14), color: ink.soft, align: 'right' })
-      text('4.5° LATE', px(0.86), py(0.72), { font: mono(14) })
-      text('TOP OF DESCENT', px(0.71), yt - 16, { font: mono(14), color: ink.soft, align: 'center', spacing: 1 })
+      text('3.0° IDLE', px(0.62), py(0.56), { font: small(14), color: ink.soft, align: 'right' })
+      text('4.5° LATE', px(0.86), py(0.72), { font: small(14) })
+      text('TOP OF DESCENT', px(0.71), yt - 16, { font: small(14), color: ink.soft, align: 'center', spacing: 1 })
       const phase = p < 0.2 ? 'CLIMB' : p < 0.74 ? 'CRUISE' : 'DESCENT'
       const flow = phase === 'CLIMB' ? 7800 : phase === 'CRUISE' ? 2460 + wob(t, 1) * 60 : 520 + wob(t, 2) * 30
       const burned = 9200 * (p < 0.2 ? p * 1.5 : p < 0.74 ? 0.3 + (p - 0.2) * 1.1 : 0.894 + (p - 0.74) * 0.3)
@@ -339,10 +339,10 @@ export const makeInstruments = (ctx, ink) => {
       ]
       cells.forEach(([a, b], i) => {
         const x = M + (i * (W - M * 2)) / 4
-        text(a, x, 478, { font: mono(14), color: ink.soft, spacing: 1 })
-        text(b, x, 530, { font: i < 2 ? serif(50) : mono(26) })
+        text(a, x, 478, { font: small(14), color: ink.soft, spacing: 1 })
+        text(b, x, 530, { font: i < 2 ? display(38) : small(24) })
       })
-      text('ADVISORY ONLY. THE PILOT STAYS IN COMMAND.', M, H - 58, { font: mono(16), color: ink.soft, spacing: 1 })
+      text('ADVISORY ONLY. THE PILOT STAYS IN COMMAND.', M, H - 58, { font: small(16), color: ink.soft, spacing: 1 })
     },
 
     // Majority vote over the last six frames, four must agree, then a one-second cooldown.
@@ -376,22 +376,22 @@ export const makeInstruments = (ctx, ink) => {
       let yes = 0
       for (let i = 0; i < frames; i++) if ((idx * 5 + i * 3) % 7 !== 0) yes++
       const confirmed = yes >= 4
-      text(`${yes} OF 6`, rx, 248, { font: mono(17), color: ink.soft, spacing: 1 })
-      text(confirmed ? g.name : 'WAITING', W - M, 248, { font: mono(17), align: 'right', color: confirmed ? ink.fg : ink.soft, spacing: 1 })
-      text(confirmed ? g.key : '…', rx, 372, { font: serif(92) })
+      text(`${yes} OF 6`, rx, 248, { font: small(17), color: ink.soft, spacing: 1 })
+      text(confirmed ? g.name : 'WAITING', W - M, 248, { font: small(17), align: 'right', color: confirmed ? ink.fg : ink.soft, spacing: 1 })
+      text(confirmed ? g.key : '…', rx, 372, { font: display(92) })
       // The cooldown bar.
       const since = confirmed ? clamp((local - 6 / 14 * 0.7) * period) : 0
       rect(rx, 410, W - M - rx, 2, ink.faint)
       rect(rx, 407, (W - M - rx) * since, 8, ink.fg)
-      text('COOLDOWN 1 S', rx, 442, { font: mono(14), color: ink.soft, spacing: 1 })
+      text('COOLDOWN 1 S', rx, 442, { font: small(14), color: ink.soft, spacing: 1 })
       // The deck it drives.
       const slide = 1 + idx - Math.floor(idx / 2)
       ctx.strokeStyle = ink.soft
       ctx.lineWidth = 2
       ctx.strokeRect(rx, 482, 148, 94)
-      text(pad((slide % 24) + 1), rx + 74, 546, { font: serif(50), align: 'center' })
-      text('ANY APP THAT TAKES', rx + 170, 516, { font: mono(14), color: ink.soft })
-      text('A KEY PRESS', rx + 170, 542, { font: mono(14), color: ink.soft })
+      text(pad((slide % 24) + 1), rx + 74, 546, { font: display(50), align: 'center' })
+      text('ANY APP THAT TAKES', rx + 170, 516, { font: small(14), color: ink.soft })
+      text('A KEY PRESS', rx + 170, 542, { font: small(14), color: ink.soft })
     },
 
     // One config drives the geometry. Span and girder count move; everything follows.
@@ -471,10 +471,10 @@ export const makeInstruments = (ctx, ink) => {
       const conf = (0.94 + wob(t * 2, 3) * 0.04).toFixed(2)
       const label = live ? `you  ${conf}` : 'searching'
       const ly = by - h / 2 - 12
-      text(label, clamp(bx - w / 2, fx, fx + fw - 180), ly < fy + 22 ? by + h / 2 + 28 : ly, { font: mono(21, 500) })
+      text(label, clamp(bx - w / 2, fx, fx + fw - 180), ly < fy + 22 ? by + h / 2 + 28 : ly, { font: small(21, 500) })
       const secs = Math.floor(pointer.dwell)
-      text(`X ${pointer.x.toFixed(2)}  Y ${pointer.y.toFixed(2)}`, M, H - 44, { font: mono(18), color: ink.soft, spacing: 1 })
-      text(`ON PAGE ${pad(Math.floor(secs / 60))}:${pad(secs % 60)}`, W - M, H - 44, { font: mono(18), color: ink.soft, align: 'right', spacing: 1 })
+      text(`X ${pointer.x.toFixed(2)}  Y ${pointer.y.toFixed(2)}`, M, H - 44, { font: small(18), color: ink.soft, spacing: 1 })
+      text(`ON PAGE ${pad(Math.floor(secs / 60))}:${pad(secs % 60)}`, W - M, H - 44, { font: small(18), color: ink.soft, align: 'right', spacing: 1 })
     },
 
     'process-0': (t) => {
@@ -487,7 +487,7 @@ export const makeInstruments = (ctx, ink) => {
       const n = Math.floor(t * 2.2) % (LOG.length + 6)
       const shown = LOG.slice(Math.max(0, n - 12), n)
       shown.forEach((l, i) => {
-        text(l, M, 142 + i * 39, { font: mono(23), color: i === shown.length - 1 ? ink.fg : ink.soft })
+        text(l, M, 142 + i * 39, { font: small(23), color: i === shown.length - 1 ? ink.fg : ink.soft })
       })
       if (Math.floor(t * 2) % 2 === 0) rect(M, 124 + shown.length * 39, 14, 24)
     },
@@ -509,15 +509,15 @@ export const makeInstruments = (ctx, ink) => {
         raw.push([M + x, 200 + v * 0.62])
         ema.push([M + x, 432 + e * 0.75])
       }
-      text('RAW', M, 118, { font: mono(15), color: ink.soft, spacing: 1 })
+      text('RAW', M, 118, { font: small(15), color: ink.soft, spacing: 1 })
       line(raw, { color: ink.soft, width: 2 })
-      text('SMOOTHED', M, 340, { font: mono(15), color: ink.soft, spacing: 1 })
+      text('SMOOTHED', M, 340, { font: small(15), color: ink.soft, spacing: 1 })
       line(ema, { width: 3 })
     },
 
     'process-2': (t) => {
       chrome('BUILD 1.0', 'PASSING')
-      text('Ready.', W / 2, 372, { font: serif(208), align: 'center', spacing: -5 })
+      text('Ready.', W / 2, 372, { font: display(208), align: 'center', spacing: -5 })
       if (Math.floor(t * 1.6) % 2 === 0) rect(W / 2 + 290, 262, 10, 116)
     },
 
@@ -526,12 +526,12 @@ export const makeInstruments = (ctx, ink) => {
       const opening = (Math.sin(t * 0.7) + 1) / 2
       const curl = [0, 1, 2, 3, 4].map((i) => clamp((Math.sin(t * 0.7 + i * 0.5) + 1) / 2) * (0.25 + 0.75 * opening))
       hand(k, ink, W / 2 + 170, H - 76, 266, curl, t, { numbers: true })
-      text('21', M, 248, { font: serif(150), spacing: -3 })
-      text('LANDMARKS', M + 4, 292, { font: mono(17), color: ink.soft, spacing: 2 })
+      text('21', M, 248, { font: display(150), spacing: -3 })
+      text('LANDMARKS', M + 4, 292, { font: small(17), color: ink.soft, spacing: 2 })
       const now = new Date(Date.now() + 5.5 * 3600 * 1000)
       const clock = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`
-      text(clock, M, H - 96, { font: mono(38) })
-      text('IST', M + 4, H - 62, { font: mono(15), color: ink.soft, spacing: 2 })
+      text(clock, M, H - 96, { font: small(38) })
+      text('IST', M + 4, H - 62, { font: small(15), color: ink.soft, spacing: 2 })
     },
 
     toolbox: (t) => {
@@ -542,8 +542,8 @@ export const makeInstruments = (ctx, ink) => {
         const y = 150 + i * row
         const on = i === live
         if (on) rect(M, y - 38, 5, 50)
-        text(verb, M + 22, y, { font: serif(42), color: on ? ink.fg : ink.soft })
-        text(items.slice(0, 3).join('  ').toUpperCase(), W - M, y - 4, { font: mono(14), color: on ? ink.fg : ink.soft, align: 'right', spacing: 0.5 })
+        text(verb, M + 22, y, { font: display(42), color: on ? ink.fg : ink.soft })
+        text(items.slice(0, 3).join('  ').toUpperCase(), W - M, y - 4, { font: small(14), color: on ? ink.fg : ink.soft, align: 'right', spacing: 0.5 })
       })
     },
 
@@ -555,9 +555,9 @@ export const makeInstruments = (ctx, ink) => {
         const y = 164 + i * row
         const on = i === live
         if (on) rect(M, y - 50, W - M * 2, row - 8, ink.faint)
-        text(pad(i + 1), M + 14, y - 8, { font: mono(17), color: on ? ink.fg : ink.soft })
-        text(title, M + 66, y - 2, { font: serif(50), color: on ? ink.fg : ink.soft, spacing: -0.5 })
-        text(status.toUpperCase(), W - M - 14, y - 8, { font: mono(14), color: ink.soft, align: 'right', spacing: 1 })
+        text(pad(i + 1), M + 14, y - 8, { font: small(17), color: on ? ink.fg : ink.soft })
+        text(title, M + 66, y - 2, { font: display(50), color: on ? ink.fg : ink.soft, spacing: -0.5 })
+        text(status.toUpperCase(), W - M - 14, y - 8, { font: small(14), color: ink.soft, align: 'right', spacing: 1 })
       })
     },
 
@@ -565,7 +565,7 @@ export const makeInstruments = (ctx, ink) => {
       chrome('ALSO', pad(sideProjects.length))
       const row = (H - 136) / sideProjects.length
       sideProjects.forEach(({ title }, i) => {
-        text(title, M, 172 + i * row, { font: serif(66), spacing: -1 })
+        text(title, M, 172 + i * row, { font: display(66), spacing: -1 })
       })
     },
 
@@ -579,16 +579,16 @@ export const makeInstruments = (ctx, ink) => {
       }
       line(pts, { width: 2.5 })
       const size = 58
-      ctx.font = serif(size)
-      text(profile.email, W / 2, 462, { font: serif(size), align: 'center', spacing: -0.5 })
+      ctx.font = display(size)
+      text(profile.email, W / 2, 462, { font: display(size), align: 'center', spacing: -0.5 })
       const w = ctx.measureText(profile.email).width
       if (Math.floor(t * 1.6) % 2 === 0) rect(W / 2 + w / 2 + 8, 416, 5, 58)
     },
 
     colophon: () => {
       chrome('END OF TAPE', '')
-      text('Thanks for', W / 2, 320, { font: serif(128), align: 'center', spacing: -3 })
-      text('watching.', W / 2, 450, { font: serif(128), align: 'center', spacing: -3 })
+      text('Thanks for', W / 2, 320, { font: display(128), align: 'center', spacing: -3 })
+      text('watching.', W / 2, 450, { font: display(128), align: 'center', spacing: -3 })
     },
   }
 

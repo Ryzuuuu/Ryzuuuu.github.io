@@ -1,3 +1,4 @@
+import ScrubText from '../components/ScrubText'
 import SectionHeading from '../components/SectionHeading'
 import { about } from '../constants'
 
@@ -8,9 +9,9 @@ const About = () => (
       <div className="panel lg:col-span-5 lg:col-start-8 lg:pl-[2.5vw]">
         <SectionHeading kicker="About" lines={about.title} />
 
-        <div className="reveal lead space-y-5" style={{ '--delay': '160ms' }}>
+        <div className="lead space-y-5">
           {about.paragraphs.map((p) => (
-            <p key={p.slice(0, 20)}>{p}</p>
+            <ScrubText key={p.slice(0, 20)} text={p} />
           ))}
         </div>
 

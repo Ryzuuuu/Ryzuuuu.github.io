@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import Logo from '../brand/Logo'
+import Scramble from './Scramble'
 import { chapters, profile } from '../constants'
 import { getSnapshot, goTo, lockScroll, subscribe } from '../director'
 
@@ -38,7 +40,8 @@ const Navbar = () => {
         style={{ transform: 'scaleX(var(--progress))' }}
       />
       <div className="container-x relative flex h-14 items-center justify-between border-b border-line bg-surface">
-        <a href="#home" className="font-display text-[1.1875rem] font-extrabold tracking-[-0.035em] text-ink" aria-label={`${profile.name}, back to top`}>
+        <a href="#home" className="logo-link inline-flex items-center gap-2.5 font-display text-[1.1875rem] font-semibold tracking-[-0.02em] text-ink" aria-label={`${profile.name}, back to top`}>
+          <Logo />
           {profile.name}
         </a>
 
@@ -54,7 +57,7 @@ const Navbar = () => {
                     aria-current={active ? 'true' : undefined}
                     className={`block px-3.5 py-2.5 transition-colors duration-300 ${active ? 'bg-ink text-surface' : 'text-ink hover:bg-raised'}`}
                   >
-                    {label}
+                    <Scramble hover duration={420}>{label}</Scramble>
                   </a>
                 </li>
               )
@@ -86,7 +89,7 @@ const Navbar = () => {
                     aria-current={chapter === id ? 'true' : undefined}
                     className="display-lg block py-1 text-ink"
                   >
-                    {label}
+                    <Scramble hover duration={420}>{label}</Scramble>
                   </a>
                 </li>
               ))}

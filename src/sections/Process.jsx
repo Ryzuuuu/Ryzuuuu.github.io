@@ -1,4 +1,6 @@
 import Lines from '../components/Lines'
+import Scramble from '../components/Scramble'
+import ScrubText from '../components/ScrubText'
 import { process } from '../constants'
 
 // How a project goes, acted out by the model: each step is its own scroll anchor, the console
@@ -11,13 +13,11 @@ const Process = () => (
           <div className="panel relative lg:col-span-5">
             {i === 0 && (
               <h2 id="process-title" data-reveal className="reveal label mb-5 text-muted">
-                How a project goes
+                <Scramble>How a project goes</Scramble>
               </h2>
             )}
             <Lines as="h3" lines={title} className="display-lg" delay={60} />
-            <p className="reveal lead mt-7 max-w-[29rem] text-muted" style={{ '--delay': '200ms' }}>
-              {body}
-            </p>
+            <ScrubText text={body} className="lead mt-7 max-w-[29rem] text-muted" />
           </div>
         </div>
       </article>

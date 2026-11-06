@@ -6,7 +6,7 @@ export const useReveal = () => {
   useEffect(() => {
     const els = document.querySelectorAll('.reveal, [data-reveal]')
     // The opening screen is on show from the start, whatever part of the viewport it fills.
-    document.querySelectorAll('#home .reveal').forEach((el) => el.classList.add('is-visible'))
+    document.querySelectorAll('#home .reveal, #home [data-reveal]').forEach((el) => el.classList.add('is-visible'))
     if (!('IntersectionObserver' in window)) {
       els.forEach((el) => el.classList.add('is-visible'))
       return

@@ -1,12 +1,26 @@
-// A headline that rises line by line out of a mask once it scrolls into view.
-// `lines` is an array of strings or nodes; each one is a line on wide screens.
+// A headline whose letters rise out of a mask, line by line, once it scrolls into view.
+// useLiveType then lets the same letters respond to the pointer.
 const Lines = ({ as: Tag = 'h2', lines, className = '', delay = 0, ...rest }) => (
-  <Tag data-reveal className={className} style={{ '--delay': `${delay}ms` }} {...rest}>
-    {lines.map((line, i) => (
-      <span key={i} className="line-mask" style={{ '--i': i }}>
-        <span>{line}</span>
-      </span>
-    ))}
+  <Tag data-reveal aria-label={lines.join(' ')} className={className} style={{ '--delay': `${delay}ms` }} {...rest}>
+    {lines.map((line, i) => {
+      let c = 0
+      return (
+        <span key={i} aria-hidden="true" className="line-mask" style={{ '--i': i }}>
+          <span>
+            {line.split(' ').map((word, w) => (
+              <span key={w}>
+                {w > 0 && ' '}
+                <span className="word">
+                  {[...word].map((letter, l) => (
+                    <span key={l} className="char" style={{ '--c': c++ }}>{letter}</span>
+                  ))}
+                </span>
+              </span>
+            ))}
+          </span>
+        </span>
+      )
+    })}
   </Tag>
 )
 

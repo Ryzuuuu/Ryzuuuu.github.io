@@ -13,7 +13,7 @@ const Signal = ({ position }) => {
   const group = useRef()
   const rings = useRef([])
   const level = useRef(0)
-  const tint = useMemo(() => color('highlight'), [])
+  const tint = useMemo(() => color('phosphor'), [])
 
   useFrame(({ clock }, delta) => {
     const { chapter, hovered } = getSnapshot()

@@ -4,7 +4,7 @@
 
 A one-page portfolio built around a 3D retro console standing on a teal island. The console stays fixed behind the page and every chapter does something to it: the **how a project goes** steps rebuild it from wireframe to clay to finished, **About** turns to the monitor, **Tools** opens up the mechanism, each **work** reloads the cartridge and runs that project's instrument on the monitor, and **Contact** sets the antenna broadcasting. Drag to turn it, or click a piece (the monitor, console, controllers, cassettes or antenna) to jump to its chapter.
 
-Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set in Bricolage Grotesque, Schibsted Grotesk, Martian Mono and Tiro Bangla.
+Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set in Archivo and Tiro Bangla.
 
 ## Run it
 
@@ -28,13 +28,22 @@ Each project has an `id` that selects its instrument in `src/canvas/instruments.
 
 The "last commit" line on the opening screen comes from GitHub's public events API, requested by the visitor's browser and cached for 30 minutes. If GitHub refuses, the line doesn't appear.
 
+## Brand
+
+The mark is a blue lotus seen from above (Neelabja means blue lotus), with its petals set like the blades of a camera aperture around a lens. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
+
+- `src/brand/Logo.jsx`: the logo on the site. Each row of petals is its own group, so it blooms in on load, turns with the scroll and opens on hover.
+- `public/brand/*.svg`: standalone files, written by `pnpm brand`, which also writes the favicon.
+
+There are two optical sizes. `full` has the dial and three rows of petals, for about 48 px and up. `compact` is redrawn with fewer, bolder parts, for nav bars and favicons. Each comes in three colourways: `brand` for light backgrounds, `reversed` for dark, and `mono`, which takes the colour of the surrounding text.
+
 ## Colour
 
-The palette sits verbatim at the top of **`src/index.css`** (`--bg`, `--text`, `--primary`, `--secondary`, …). Nothing else hard-codes a colour:
+The palette sits at the top of **`src/index.css`** (`--paper`, `--deep`, `--brand`, `--amber`, `--plinth`, `--casing`, …): crisp white, one confident blue, amber kept small. The monitor has its own `--phosphor` colours, the only green on the page. Nothing else hard-codes a colour:
 
 - Tailwind classes (`bg-surface`, `text-ink`, `text-muted`, `border-line`, `text-accent`) map to *roles* that point at palette variables.
-- Each chapter is `data-tone="light"` or `"dark"`. As you scroll, the director flips `data-tone` on `<html>`, the roles swap, and the whole page cross-fades between mint and deep teal.
-- The plinth and the monitor read the same variables through `src/palette.js`. The console keeps its own textures, so the palette doesn't recolour it.
+- Each chapter is `data-tone="light"` or `"dark"`. As you scroll, the director flips `data-tone` on `<html>`, the roles swap, and the whole page cross-fades between white and deep blue.
+- The plinth and the monitor read these variables through `src/palette.js`. `--casing` repaints the copper in the console's textures in the shader (`ConsoleModel.jsx`), keeping the labels, artwork and some of the wear.
 
 ## How the page drives the exhibit
 
@@ -59,16 +68,21 @@ src/
 ├── director.js              # Lenis, scroll → shot blend, tone, velocity
 ├── palette.js               # Reads the CSS palette for three.js and canvas
 ├── constants.js             # All editable content
+├── brand/                   # The logo: geometry (mark.js) and component (Logo.jsx)
 ├── index.css                # Palette, tone roles, type scale, reveal motion
 ├── components/
 │   ├── Navbar.jsx           # Chapter nav, progress line, phone menu
-│   ├── Lines.jsx            # Headlines that rise line by line
+│   ├── Lines.jsx            # Headlines whose letters rise out of a mask
+│   ├── Scramble.jsx         # Small labels that decode from noise
+│   ├── ScrubText.jsx        # Paragraphs that light up word by word as you scroll
+│   ├── CountUp.jsx          # Figures that count up when first seen
 │   ├── SectionHeading.jsx   # Chapter name, headline, intro
 │   ├── ExhibitCaption.jsx   # Placard saying what the monitor is running
 │   ├── ExhibitLoader.jsx    # Thin progress line, drawn where the exhibit will appear
 │   └── SceneBoundary.jsx    # Hides the 3D scene if WebGL fails
 ├── hooks/
 │   ├── useReveal.js         # Marks elements visible on first scroll into view
+│   ├── useLiveType.js       # Headline letters swell near the pointer
 │   └── useLastPush.js       # Most recent public push, from GitHub
 ├── sections/                # Hero, Process, About, Toolbox, Work, Contact, Colophon
 └── canvas/                  # Lazy-loaded 3D chunk (except shots.js / targets.js)
@@ -83,7 +97,8 @@ src/
     └── targets.js           # Which piece opens which chapter; shared drag/focus state
 public/
 ├── console.glb              # Optimized model, full textures (~5.4 MB)
-└── console-phone.glb        # Same model, quarter-size textures (~3 MB)
+├── console-phone.glb        # Same model, quarter-size textures (~3 MB)
+└── brand/                   # Logo files, written by `pnpm brand`
 ```
 
 ## Performance notes

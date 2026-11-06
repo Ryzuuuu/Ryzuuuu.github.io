@@ -16,7 +16,8 @@ export const profile = {
 
 export const intro = {
   statement:
-    'I study computer science at VIT Bhopal. Mostly I build things that try to make sense of cameras, microphones and sensors, then find out how they behave once they leave my laptop.',
+    'I study computer science at VIT Bhopal. Most of what I make has to understand a camera, a microphone or a sensor, then survive leaving my laptop.',
+  verbs: ['see', 'hear', 'predict', 'reason', 'speak'],
   now: [
     ['FOSSEE, IIT Bombay', '3D bridge models for Osdag'],
     ['Travarsa', 'AI agents and computer vision'],
