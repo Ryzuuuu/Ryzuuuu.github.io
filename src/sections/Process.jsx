@@ -3,8 +3,9 @@ import { process } from '../constants'
 
 const NUMERALS = ['i', 'ii', 'iii']
 
-// How a project goes, acted out by the model: each step is its own scroll anchor, the console
-// swaps from wireframe to clay to finished as you reach it, and the camera keeps orbiting.
+// How a project goes, acted out by the model: each step is its own scroll anchor. The console
+// goes from wireframe, to broken apart into floating pieces, to reassembled as you reach each
+// one, and the camera keeps orbiting.
 const Process = () => (
   <section id="process" data-chapter="home" data-tone="dark" aria-labelledby="process-title" className="relative">
     {process.map(({ title, body }, i) => (

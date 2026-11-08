@@ -14,17 +14,13 @@ export default {
         muted: token('fg-muted'),
         line: token('rule'),
         accent: token('accent'),
-        night: token('night'),
       },
       fontFamily: {
         serif: ['Newsreader', 'Georgia', 'serif'],
         sans: ['Geist', 'system-ui', 'sans-serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
         bengali: ['"Tiro Bangla"', 'serif'],
-      },
-      screens: {
-        xs: '450px',
-      },
+      }
     },
   },
   plugins: [],

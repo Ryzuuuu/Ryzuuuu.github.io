@@ -200,8 +200,10 @@ const rest = (scene, name) => {
 // Texture slots worth sharpening at the grazing angles the camera keeps visiting.
 const MAPS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap']
 
-// The "how I work" steps render the console as a wireframe, then clay, then finished.
-const MODE_FOR = { 'process-0': 'wire', 'process-1': 'clay' }
+// The "how I work" steps: a wireframe first, then the console is broken apart to be tested,
+// then it comes back together finished.
+const MODE_FOR = { 'process-0': 'wire' }
+const SHATTER_ON = 'process-1'
 
 // Mutating the cached GLTF scene is intentional, and it must only happen once per scene: the
 // animations hold on to the materials made here, so a second pass would leave them driving copies
@@ -280,6 +282,203 @@ const makeEarRig = (scene, toLocal) => {
   return { update }
 }
 
+// ── Breaking it apart ──────────────────────────────────────────────────────────────
+// Every mesh in the model is a piece. Each one has its own way out from the console's core,
+// its own tumble and its own moment to leave, so the console comes apart in a ripple rather than
+// all at once, hangs in the air turning slowly, and is pulled back together the same way. A mesh's parent can be spinning (the fan, the reels), so its way out
+// is kept in the scene's frame and carried into the parent's frame every frame.
+const CORE = new THREE.Vector3(0, 0.55, -1.1)
+const rand = (seed) => {
+  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453
+  return x - Math.floor(x)
+}
+const easeInOut = (p) => (p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2)
+const shatterM = new THREE.Matrix4()
+const shatterM3 = new THREE.Matrix3()
+const shatterOff = new THREE.Vector3()
+const shatterQ = new THREE.Quaternion()
+const shatterV = new THREE.Vector3()
+
+const inside = (object, name) => {
+  for (let n = object; n; n = n.parent) if (n.name === name) return true
+  return false
+}
+
+const makeShatter = (scene, toLocal, skip) => {
+  const found = []
+  scene.traverse((mesh) => {
+    if (!mesh.isMesh || skip.has(mesh)) return
+    mesh.geometry.computeBoundingBox()
+    const box = new THREE.Box3().setFromObject(mesh).applyMatrix4(toLocal)
+    found.push({
+      mesh,
+      seed: found.length + 1,
+      centre: box.getCenter(new THREE.Vector3()),
+      size: box.getSize(new THREE.Vector3()).length(),
+      // The monitor's parts stay upright, so the picture on its screen can travel with the glass.
+      upright: inside(mesh, 'Lumen_Monitor_0'),
+    })
+  })
+
+  // Where each piece goes: out from the console's core across the island, and up, so it reads
+  // as an explosion from whichever side you turn it to. Big pieces travel less than small ones.
+  for (const f of found) {
+    const out = new THREE.Vector3(f.centre.x - CORE.x, 0, f.centre.z - CORE.z)
+    if (out.lengthSq() < 0.01) out.set(rand(f.seed) - 0.5, 0, rand(f.seed + 1) - 0.5)
+    out.normalize().multiplyScalar(1 + rand(f.seed + 2) * 1.3)
+    out.y = 0.9 + rand(f.seed + 3) * 1.6 + Math.max(0, f.centre.y - CORE.y) * 0.4
+    out.multiplyScalar(f.size > 3 ? 0.6 : f.size > 1.5 ? 0.85 : 1)
+    f.out = out
+    f.delay = rand(f.seed + 9) * 0.4
+    f.spin = (0.35 + rand(f.seed + 7) * 0.7) * (rand(f.seed + 8) < 0.5 ? -1 : 1)
+  }
+
+  // The monitor comes apart along its depth, like an exploded drawing seen from the front: its
+  // layers slide forward one behind another, the glass (with the picture on it) furthest out.
+  // They stay upright so the picture can travel with the glass.
+  const layers = found.filter((f) => f.upright).sort((p, q) => p.centre.z - q.centre.z)
+  layers.forEach((f, rank) => {
+    const glass = f.mesh.material.name === 'Monitor_glass_mat'
+    f.out = new THREE.Vector3(0, 0.25 + rank * 0.08, glass ? 1.6 : rank * 0.5)
+    f.delay = 0.1 + rank * 0.07
+    f.spin = 0
+  })
+
+  // No two small pieces may end up in each other. Each piece is a sphere round where it lands;
+  // overlapping small ones are pushed apart along the line between them (big pieces and the
+  // monitor's layers hold still and only push), until nothing overlaps.
+  const landing = found.map((f) => ({
+    f,
+    at: f.centre.clone().add(f.out),
+    r: f.size * (f.size > 3 ? 0.32 : 0.45) + 0.08,
+    fixed: f.upright || f.size > 3,
+  }))
+  const push = new THREE.Vector3()
+  for (let pass = 0; pass < 80; pass++) {
+    let moved = false
+    for (let x = 0; x < landing.length; x++) {
+      for (let y = x + 1; y < landing.length; y++) {
+        const p = landing[x]
+        const q = landing[y]
+        if (p.fixed && q.fixed) continue
+        push.copy(q.at).sub(p.at)
+        const d = push.length()
+        const overlap = p.r + q.r - d
+        if (overlap <= 0) continue
+        moved = true
+        if (d < 1e-4) push.set(rand(x + y) - 0.5, 0.2, rand(x * y + 1) - 0.5)
+        push.normalize().multiplyScalar(overlap + 0.02)
+        if (p.fixed) q.at.add(push)
+        else if (q.fixed) p.at.sub(push)
+        else {
+          q.at.addScaledVector(push, 0.5)
+          p.at.addScaledVector(push, -0.5)
+        }
+        // Never into the island.
+        p.at.y = Math.max(p.at.y, p.r * 0.6 + 0.1)
+        q.at.y = Math.max(q.at.y, q.r * 0.6 + 0.1)
+      }
+    }
+    if (!moved) break
+  }
+  for (const { f, at } of landing) f.out = at.sub(f.centre)
+
+  const pieces = found.map(({ mesh, seed, out, delay, spin }) => ({
+    mesh,
+    seed,
+    out,
+    delay,
+    spin,
+    // The tumble turns about the piece's own middle, in its parent's frame.
+    pivot: mesh.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(mesh.matrix),
+    axis: new THREE.Vector3(rand(seed + 5) - 0.5, rand(seed + 6) - 0.5, rand(seed + 7) - 0.5).normalize(),
+    position: mesh.position.clone(),
+    quaternion: mesh.quaternion.clone(),
+    glass: mesh.material.name === 'Monitor_glass_mat',
+  }))
+
+  // Where the glass went, in the scene's frame, so the monitor's picture can follow it.
+  const glassOffset = new THREE.Vector3()
+  let moved = false
+
+  const update = (amount, t) => {
+    glassOffset.set(0, 0, 0)
+    if (amount <= 0.0005) {
+      if (moved) {
+        for (const p of pieces) {
+          p.mesh.position.copy(p.position)
+          p.mesh.quaternion.copy(p.quaternion)
+        }
+        moved = false
+      }
+      return
+    }
+    moved = true
+    for (const p of pieces) {
+      const k = easeInOut(THREE.MathUtils.clamp((amount - p.delay) / 0.55, 0, 1))
+      // While it hangs apart, each piece drifts on its own slow breath.
+      shatterOff.copy(p.out).multiplyScalar(k)
+      shatterOff.y += Math.sin(t * 1.2 + p.seed) * 0.07 * k
+      if (p.glass) glassOffset.copy(shatterOff)
+      // Scene frame → the parent's frame (it may be turning).
+      shatterM.copy(p.mesh.parent.matrixWorld).invert().multiply(scene.matrixWorld)
+      shatterM3.setFromMatrix4(shatterM)
+      shatterOff.applyMatrix3(shatterM3)
+      shatterQ.setFromAxisAngle(p.axis, p.spin * k * (1.1 + Math.sin(t * 0.6 + p.seed) * 0.25))
+      shatterV.copy(p.position).sub(p.pivot).applyQuaternion(shatterQ).add(p.pivot)
+      p.mesh.position.copy(shatterV).add(shatterOff)
+      p.mesh.quaternion.copy(shatterQ).multiply(p.quaternion)
+    }
+  }
+  return { update, glassOffset }
+}
+
+// The dust thrown off as it breaks: sparks that burst out of the core with the pieces, hang in a
+// slow swirl while it's apart, and are drawn back in as it closes.
+const DUST = 520
+const makeDust = () => {
+  const geometry = new THREE.BufferGeometry()
+  const dirs = new Float32Array(DUST * 3)
+  const seeds = new Float32Array(DUST)
+  for (let i = 0; i < DUST; i++) {
+    const u = rand(i * 3.1) * 2 - 1
+    const a = rand(i * 7.7) * Math.PI * 2
+    const r = Math.sqrt(1 - u * u)
+    const reach = 1.2 + rand(i * 1.3) ** 0.7 * 3.4
+    dirs.set([Math.cos(a) * r * reach, (Math.abs(u) * 0.8 + 0.25) * reach * 0.8, Math.sin(a) * r * reach], i * 3)
+    seeds[i] = rand(i * 5.3)
+  }
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(DUST * 3), 3))
+  const material = new THREE.PointsMaterial({
+    color: color('phosphor'), size: 0.06, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
+  })
+  const points = new THREE.Points(geometry, material)
+  points.frustumCulled = false
+  points.visible = false
+  const pos = geometry.attributes.position
+  const update = (amount, t) => {
+    points.visible = amount > 0.002
+    if (!points.visible) return
+    const k = easeInOut(Math.min(1, amount))
+    for (let i = 0; i < DUST; i++) {
+      const sd = seeds[i]
+      const swirl = t * (0.12 + sd * 0.25) * k
+      const dx = dirs[i * 3] * k
+      const dz = dirs[i * 3 + 2] * k
+      const c = Math.cos(swirl)
+      const sn = Math.sin(swirl)
+      pos.array[i * 3] = CORE.x + dx * c - dz * sn
+      pos.array[i * 3 + 1] = CORE.y + dirs[i * 3 + 1] * k + Math.sin(t * 0.9 + sd * 20) * 0.08 * k
+      pos.array[i * 3 + 2] = CORE.z + dx * sn + dz * c
+    }
+    pos.needsUpdate = true
+    // Brightest as it bursts and as it closes; a faint glitter while it hangs apart.
+    material.opacity = 0.25 * k + Math.sin(Math.PI * Math.min(1, amount)) * 0.7
+  }
+  return { points, update }
+}
+
 const prepareScene = (scene) => {
   scene.traverse((o) => {
     if (!o.isMesh) return
@@ -353,7 +552,6 @@ const prepareScene = (scene) => {
   })
   const looks = {
     wire: new THREE.MeshBasicMaterial({ color: color('phosphor'), wireframe: true, transparent: true, opacity: 0.5, toneMapped: false }),
-    clay: new THREE.MeshStandardMaterial({ color: '#b9a48f', roughness: 0.9, metalness: 0 }),
   }
 
   // The cartridge sitting in the console's bay; it reseats itself for each work.
@@ -366,25 +564,35 @@ const prepareScene = (scene) => {
   const reels = ['lent_big_12', 'lent_small_13', 'lent_big001_24', 'lent_small001_25']
     .map((n) => scene.getObjectByName(n)).filter(Boolean)
 
-  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks, pads, ears, tapes, reels }
+  // Every visible mesh is a piece when it breaks apart; the hidden screen art isn't.
+  const shatter = makeShatter(scene, toLocal, new Set(logo ? [logo.getObjectByProperty('isMesh', true)] : []))
+
+  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks, pads, ears, tapes, reels, shatter }
 }
 
 const ConsoleModel = ({ onSelect }) => {
   const { scene, animations } = useGLTF(MODEL_URL)
   const { actions } = useAnimations(animations, scene)
-  const { proxies, glow, glass, cart, cartY, meshes, looks, pads, ears, tapes, reels } = useMemo(() => prepareOnce(scene), [scene])
+  const { proxies, glow, glass, cart, cartY, meshes, looks, pads, ears, tapes, reels, shatter } = useMemo(() => prepareOnce(scene), [scene])
   const pool = useMemo(() => makePool(), [])
+  const dust = useMemo(() => makeDust(), [])
+  const screenRig = useRef()
   const spill = useRef()
   const spillLight = useRef()
   const powered = useRef(false)
   const scanner = useRef()
   const gl = useThree((s) => s.gl)
 
-  const state = useRef({ boot: 0, flash: null, flashT: 0, press: null, screen: null, hop: 1, mode: 'full', scan: 1, over: { about: 0, toolbox: 0, work: 0, archive: 0, contact: 0 } })
+  const state = useRef({ boot: 0, flash: null, flashT: 0, press: null, screen: null, hop: 1, mode: 'full', scan: 1, split: 0, over: { about: 0, toolbox: 0, work: 0, archive: 0, contact: 0 } })
   const selectRef = useRef(onSelect)
   useEffect(() => { selectRef.current = onSelect }, [onSelect])
 
-  useEffect(() => () => { looks.wire.dispose(); looks.clay.dispose(); pool.dispose() }, [looks, pool])
+  useEffect(() => () => {
+    looks.wire.dispose()
+    pool.dispose()
+    dust.points.geometry.dispose()
+    dust.points.material.dispose()
+  }, [looks, pool, dust])
 
   // The baked clip spins the fan, rollers and reels and runs the loading bar. It idles slowly
   // and runs at full speed while the Toolbox chapter is looking at the mechanism.
@@ -451,7 +659,7 @@ const ConsoleModel = ({ onSelect }) => {
     const wash = powered.current ? 0.05 + (hovered === 'about' ? 0.12 : 0) : 0
     for (const m of glass) m.emissiveIntensity = damp(m.emissiveIntensity, wash, 8, dt)
 
-    // Wireframe → clay → finished. Swap the look and send the scanner ring up the console.
+    // Wireframe → finished. Swap the look and send the scanner ring up the console.
     const mode = MODE_FOR[screen] ?? 'full'
     if (mode !== s.mode) {
       s.mode = mode
@@ -461,6 +669,16 @@ const ConsoleModel = ({ onSelect }) => {
         mesh.castShadow = mode !== 'wire' && !finished.transparent
       }
     }
+    // Broken apart for testing, then pulled back together. When the last piece seats, the
+    // scanner ring sweeps up the console as if checking the joins.
+    const apart = screen === SHATTER_ON && !reducedMotion
+    const was = s.split
+    s.split = apart ? Math.min(1, s.split + dt * 0.8) : Math.max(0, s.split - dt * 0.95)
+    if (was > 0 && s.split === 0) s.scan = 0
+    shatter.update(s.split, t)
+    dust.update(s.split, t)
+    if (screenRig.current) screenRig.current.position.copy(shatter.glassOffset)
+
     s.scan = Math.min(1, s.scan + dt * 1.5)
     if (scanner.current) {
       scanner.current.visible = s.scan < 1
@@ -539,7 +757,10 @@ const ConsoleModel = ({ onSelect }) => {
   return (
     <group>
       <primitive object={scene} />
-      <MonitorScreen position={[-0.025, 1.9, -2.74]} size={[2.3, 1.56]} powered={powered} />
+      <group ref={screenRig}>
+        <MonitorScreen position={[-0.025, 1.9, -2.74]} size={[2.3, 1.56]} powered={powered} />
+      </group>
+      <primitive object={dust.points} />
       <Signal position={ANTENNA} />
       <pointLight ref={spillLight} position={[0, 1.7, -1.9]} intensity={0} distance={7} decay={1.4} color={color('phosphor')} />
       <mesh ref={spill} rotation-x={-Math.PI / 2} position={[0, 0.014, -1.25]} visible={false}>

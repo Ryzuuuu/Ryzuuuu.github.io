@@ -20,7 +20,7 @@ const SHOTS = {
   process: (step, local) => {
     const t = (step + local) / 3
     return {
-      target: [0, 1.0, 0], az: 30 + t * 330, el: 16 + Math.sin(t * Math.PI) * 14, dist: 16.5 - Math.sin(t * Math.PI) * 2.5,
+      target: [0, 1.0 + Math.sin(t * Math.PI) * 0.9, -0.4], az: 30 + t * 330, el: 16 + Math.sin(t * Math.PI) * 16, dist: 16.5 + Math.sin(t * Math.PI) * 2,
       fx: 0.68, fy: 0.52,
       mobile: { dist: 24, fy: 0.3 },
     }
@@ -57,7 +57,7 @@ const SHOTS = {
 
 // What the monitor is running, shown beside the console. Keyed by screen first and shot
 // second; each project's line lives with the project in constants.js.
-export const CAPTIONS = {
+const CAPTIONS = {
   hero: { text: 'A box that follows your pointer' },
   'process-0': { text: 'A first run, and a lot of print statements' },
   'process-1': { text: 'A noisy signal, and the same one calmed down' },

@@ -1,6 +1,6 @@
 // The mark: a blue lotus seen from above (নীলাব্জ, Neelabja, means blue lotus), set in a
-// night-blue disc. Two rows of petals, offset by half a petal as on the real flower, each a single
-// flat colour, round a small golden heart.
+// night-blue disc. Two rows of long, slender petals, offset by half a petal as on the real
+// flower, each a single flat colour with its tip curling gently aside, round a small golden heart.
 //
 // This file is the single source of the drawing. drawMark() returns the SVG's inner markup; the
 // React component (Logo.jsx) and the exported files (scripts/build-brand.mjs) both use it, so
@@ -11,29 +11,28 @@ export const VIEW_BOX = '-32 -32 64 64'
 
 const n = (v) => Number(v.toFixed(2))
 
-// One petal pointing up, from `inner` to `outer` units out: widest a little below the middle and
-// drawn out to a fine point.
-const petal = (inner, outer, width) => {
+// One petal pointing up, from `inner` to `outer` units out: slender, widest a little below the
+// middle, and drawn out to a fine point whose tip curls gently to one side, so that together the
+// petals read as a soft swirl. `curl` is how far the tip leans, in units.
+const petal = (inner, outer, width, curl) => {
   const y = (t) => n(-(inner + (outer - inner) * t))
-  const x = (v) => n(v * width)
-  return `M0 ${y(0)}C${x(0.75)} ${y(0.06)} ${x(1)} ${y(0.34)} ${x(0.84)} ${y(0.56)}C${x(0.64)} ${y(0.8)} ${x(0.36)} ${y(0.92)} 0 ${y(1)}C${x(-0.36)} ${y(0.92)} ${x(-0.64)} ${y(0.8)} ${x(-0.84)} ${y(0.56)}C${x(-1)} ${y(0.34)} ${x(-0.75)} ${y(0.06)} 0 ${y(0)}Z`
+  const x = (v, t) => n(v * width + curl * t * t)
+  return `M0 ${y(0)}C${x(0.7, 0.06)} ${y(0.06)} ${x(1, 0.32)} ${y(0.32)} ${x(0.86, 0.55)} ${y(0.55)}C${x(0.66, 0.78)} ${y(0.78)} ${x(0.3, 0.93)} ${y(0.93)} ${x(0, 1)} ${y(1)}C${x(-0.22, 0.93)} ${y(0.93)} ${x(-0.6, 0.78)} ${y(0.78)} ${x(-0.84, 0.55)} ${y(0.55)}C${x(-1, 0.32)} ${y(0.32)} ${x(-0.7, 0.06)} ${y(0.06)} 0 ${y(0)}Z`
 }
 
 const around = (count, offset = 0) => Array.from({ length: count }, (_, i) => n(offset + (i * 360) / count))
 
-const row = (id, inner, outer, width, count, offset) => ({ id, d: petal(inner, outer, width), angles: around(count, offset) })
+const row = (id, inner, outer, width, curl, count, offset) => ({ id, d: petal(inner, outer, width, curl), angles: around(count, offset) })
 
 // One drawing at every size: few, bold parts hold up from the favicon to a poster.
 const SIZES = {
   full: {
-    layers: [row('back', 6.5, 26, 9.2, 8, 0), row('middle', 5, 18.5, 7.4, 8, 22.5)],
-    heart: { radius: 5.6 },
+    layers: [row('back', 4.5, 29.6, 7.6, 3.2, 8, 0), row('middle', 3.5, 21.5, 6.2, 2.4, 8, 22.5)],
+    heart: { radius: 5 },
     gap: 0.8,
   },
 }
 SIZES.compact = SIZES.full
-
-export const markGeometry = (size = 'full') => SIZES[size]
 
 // One flat colour per row: deep neel behind, a paler blue in front.
 export const COLORWAYS = {
@@ -68,7 +67,7 @@ export const drawMark = (size = 'full', c = COLORWAYS.jewel, key = 'mark') => {
   const flower = []
   layers.forEach(({ id: row, d, angles }, l) => {
     const petals = angles.map((a, i) =>
-      `<g transform="rotate(${a})"><path class="logo__petal" style="--i:${i};--l:${l}" d="${d}" fill="${c[row]}" stroke="${c.gap}" stroke-width="${gap}" stroke-linejoin="round"/></g>`).join('')
+      `<g transform="rotate(${a})"><g class="logo__sway" style="--i:${i};--l:${l}"><path class="logo__petal" d="${d}" fill="${c[row]}" stroke="${c.gap}" stroke-width="${gap}" stroke-linejoin="round"/></g></g>`).join('')
     flower.push(`<g class="logo__layer logo__layer--${row}">${petals}</g>`)
   })
 

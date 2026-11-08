@@ -2,7 +2,7 @@
 
 **Live site: https://ryzuuuu.github.io/**
 
-A one-page portfolio, set like a printed monograph: warm paper, near-black ink and one blue (neel, the colour in the name). A 3D retro console stands fixed behind the page and every chapter does something to it: the **how a project goes** steps rebuild it from wireframe to clay to finished, **About** turns to the monitor, **Tools** opens up the mechanism, each **work** reloads the cartridge and runs that project's instrument on the monitor, and **Contact** sets the antenna broadcasting. Point at the antenna and its ears swing round hunting for a signal while it sends out pulses; they stop the moment you look away. Drag to turn it, or click a piece to jump to its chapter. On phones the console sits in a window over the top half of the screen, and each project also gets a live figure plate under its copy.
+A one-page portfolio, set like a printed monograph: warm paper, near-black ink and one blue (neel, the colour in the name). A 3D retro console stands fixed behind the page and every chapter does something to it: the **how a project goes** steps take it from wireframe to a cloud of floating parts and snap it back together finished, **About** turns to the monitor, **Tools** opens up the mechanism, each **work** reloads the cartridge and runs that project's instrument on the monitor, and **Contact** sets the antenna broadcasting. Point at the antenna and its ears swing round hunting for a signal while it sends out pulses; they stop the moment you look away. Drag to turn it, or click a piece to jump to its chapter. On phones the console sits in a window over the top half of the screen, and each project also gets a live figure plate under its copy.
 
 Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set in Newsreader, Geist, Geist Mono and Tiro Bangla.
 
@@ -30,7 +30,7 @@ The "last commit" line on the opening screen comes from GitHub's public events A
 
 ## Brand
 
-The mark is a blue lotus seen from above (Neelabja means blue lotus), in a night-blue disc: two rows of petals, each a single flat colour, offset by half a petal, round a small golden heart. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
+The mark is a blue lotus seen from above (Neelabja means blue lotus), in a night-blue disc: two rows of long, slender petals, each a single flat colour with its tip curling gently aside, offset by half a petal, round a small golden heart. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
 
 - `src/brand/Logo.jsx`: the logo on the site. The flower turns slowly the whole time, and each row of petals is its own group, so it blooms in on load, the rows counter-turn with the scroll, and it opens on hover.
 - `public/brand/*.svg`: standalone files, written by `pnpm brand`, which also writes the favicon.

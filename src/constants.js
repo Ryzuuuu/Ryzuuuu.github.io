@@ -16,9 +16,6 @@ export const profile = {
 
 export const intro = {
   lede: 'I build things that have to make sense of a camera, a microphone or a sensor, and then keep working once they leave my laptop.',
-  statement:
-    'I study computer science at VIT Bhopal. Most of what I make has to understand a camera, a microphone or a sensor, then survive leaving my laptop.',
-  verbs: ['see', 'hear', 'predict', 'reason', 'speak'],
   // What's on the desk right now, for the card in the opening screen.
   now: [
     { org: 'FOSSEE', where: 'IIT Bombay', what: 'Building 3D bridge models for Osdag, an open-source structural design tool.' },
@@ -35,7 +32,7 @@ export const chapters = [
   { id: 'contact', label: 'Contact' },
 ]
 
-// How a project goes, acted out by the model: wireframe, then clay, then finished.
+// How a project goes, acted out by the model: wireframe, then broken apart, then put back together finished.
 export const process = [
   {
     title: ['First,', 'make it run.'],
@@ -47,7 +44,7 @@ export const process = [
   },
   {
     title: ['Then, finally,', 'make it nice.'],
-    body: 'You just watched this console go from wireframe to clay to finished, which is roughly how the site got built too. Polish comes last, so I don’t get attached to something broken.',
+    body: 'You just watched this console go from wireframe to pieces and back together, which is roughly how the site got built too. Polish comes last, so I don’t get attached to something broken.',
   },
 ]
 
