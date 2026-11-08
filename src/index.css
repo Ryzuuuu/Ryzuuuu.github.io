@@ -283,23 +283,19 @@
 .panel { pointer-events: auto; }
 
 /* ── The logo ────────────────────────────────────────────────────────────────────
-   A blue lotus set like a jewel in a night-blue disc. It blooms open on load, row by row and
-   petal by petal; the flower turns slowly the whole time while a gold satellite circles the rim
-   the other way; the rows counter-turn as the page scrolls. On hover the petals open out, the
-   glow behind them swells. Its colours are its own, so it reads the
-   same on light and dark chapters. */
+   A blue lotus in a night-blue disc. It blooms open on load, row by row and petal by petal, turns
+   slowly the whole time, and its two rows counter-turn as the page scrolls. On hover the petals
+   open out and the rows step round. Its colours are its own, so it reads the same on light and
+   dark chapters. */
 .logo {
   flex: none;
   width: 2.125rem;
   height: 2.125rem;
   overflow: visible;
-  filter: drop-shadow(0 3px 6px oklch(0.2 0.08 265 / 0.28));
 }
 .logo__turn { animation: logo-turn 60s linear infinite; }
-.logo__orbit { animation: logo-turn 9s linear infinite reverse; }
 .logo__layer--back { transform: rotate(calc(var(--progress) * 180deg)); }
 .logo__layer--middle { transform: rotate(calc(var(--progress) * -135deg)); }
-.logo__layer--front { transform: rotate(calc(var(--progress) * 90deg)); }
 .logo__layer { transition: rotate 1.1s var(--ease); }
 .logo__petal {
   transition: transform 0.8s var(--ease);
@@ -308,13 +304,8 @@
   animation-delay: calc(var(--l) * 170ms + var(--i) * 50ms + 250ms);
 }
 .logo__heart {
-  transition: transform 0.8s var(--ease), filter 0.8s var(--ease);
+  transition: transform 0.8s var(--ease);
   animation: logo-bloom 1s var(--ease) 0.15s backwards;
-}
-.logo__glow {
-  transition: transform 0.9s var(--ease), opacity 0.9s var(--ease);
-  opacity: 0.8;
-  animation: logo-breathe 4.5s ease-in-out infinite;
 }
 .logo__disc { animation: logo-bloom 0.9s var(--ease) backwards; }
 @keyframes logo-bloom {
@@ -323,16 +314,11 @@
 @keyframes logo-turn {
   to { transform: rotate(360deg); }
 }
-@keyframes logo-breathe {
-  50% { opacity: 0.45; }
-}
 @media (hover: hover) {
   .logo-link:hover .logo__petal { transform: scale(1.08); }
-  .logo-link:hover .logo__heart { transform: scale(1.15); filter: brightness(1.15); }
-  .logo-link:hover .logo__glow { transform: scale(1.25); }
+  .logo-link:hover .logo__heart { transform: scale(1.15); }
   .logo-link:hover .logo__layer--back { rotate: 22.5deg; }
   .logo-link:hover .logo__layer--middle { rotate: -22.5deg; }
-  .logo-link:hover .logo__layer--front { rotate: 45deg; }
 }
 
 /* ── Nav ──────────────────────────────────────────────────────────────────────── */
@@ -664,7 +650,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo__layer, .logo__turn, .logo__orbit, .logo__glow { transform: none; animation: none; }
+  .logo__layer, .logo__turn { transform: none; animation: none; }
   .reveal, .line-mask > span, .draw { opacity: 1; transform: none; transition: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
