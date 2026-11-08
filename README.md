@@ -30,7 +30,7 @@ The "last commit" line on the opening screen comes from GitHub's public events A
 
 ## Brand
 
-The mark is a blue lotus seen from above (Neelabja means blue lotus), in a night-blue disc: two rows of folded petals, offset by half a petal, round a small golden heart. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
+The mark is a blue lotus seen from above (Neelabja means blue lotus), in a night-blue disc: two rows of petals, each a single flat colour, offset by half a petal, round a small golden heart. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
 
 - `src/brand/Logo.jsx`: the logo on the site. The flower turns slowly the whole time, and each row of petals is its own group, so it blooms in on load, the rows counter-turn with the scroll, and it opens on hover.
 - `public/brand/*.svg`: standalone files, written by `pnpm brand`, which also writes the favicon.
