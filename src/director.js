@@ -55,7 +55,7 @@ export const lockScroll = (locked) => {
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const smooth = (t) => t * t * (3 - 2 * t)
 const read = (el, local) => ({ shot: el.dataset.shot, param: Number(el.dataset.param ?? 0), local })
-const TONE_COLOR = { light: '#f8fbfe', dark: '#031a31' }
+const TONE_COLOR = { light: '#f4f1ea', dark: '#0f1526' }
 // The opening shot's copy and console already sit apart, so nothing needs veiling.
 const scrimFor = (shot) => (shot === 'hero' ? 0 : 1)
 
@@ -138,6 +138,7 @@ export const startDirector = () => {
     const max = root.scrollHeight - vh
     root.style.setProperty('--progress', (max > 0 ? clamp01(y / max) : 0).toFixed(4))
     root.style.setProperty('--hero', clamp01(y / vh).toFixed(4))
+    root.toggleAttribute('data-scrolled', y > 24)
   }
 
   // ── The loop ────────────────────────────────────────────────────────────────

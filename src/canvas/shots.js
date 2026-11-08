@@ -58,7 +58,7 @@ const SHOTS = {
 // What the monitor is running, shown beside the console. Keyed by screen first and shot
 // second; each project's line lives with the project in constants.js.
 export const CAPTIONS = {
-  hero: { text: 'It’s tracking your cursor' },
+  hero: { text: 'A box that follows your pointer' },
   'process-0': { text: 'A first run, and a lot of print statements' },
   'process-1': { text: 'A noisy signal, and the same one calmed down' },
   'process-2': { text: 'Ready' },

@@ -13,8 +13,8 @@ const ExhibitLoader = ({ progress, done = false }) => (
         style={{ transform: `scaleX(${(progress ?? 3) / 100})` }}
       />
     </div>
-    <p className="label mt-2 flex justify-between text-muted">
-      <span>console.glb</span>
+    <p className="t-meta mt-2 flex justify-between text-muted">
+      <span>Loading</span>
       <span>{progress === undefined ? '' : Math.round(progress)}</span>
     </p>
   </div>

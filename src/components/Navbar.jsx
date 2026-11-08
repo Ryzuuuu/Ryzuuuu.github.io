@@ -1,18 +1,65 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Logo from '../brand/Logo'
-import Scramble from './Scramble'
+import Button from './Button'
 import { chapters, profile } from '../constants'
-import { getSnapshot, goTo, lockScroll, subscribe } from '../director'
+import { goTo, lockScroll } from '../director'
+
+// Which section is under the top third of the screen.
+const useActive = () => {
+  const [active, setActive] = useState(null)
+  useEffect(() => {
+    const els = chapters.map(({ id }) => document.getElementById(id)).filter(Boolean)
+    if (!els.length || !('IntersectionObserver' in window)) return undefined
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id)
+      },
+      { rootMargin: '-30% 0px -69% 0px' },
+    )
+    els.forEach((el) => io.observe(el))
+    const top = () => { if (window.scrollY < window.innerHeight * 0.5) setActive(null) }
+    window.addEventListener('scroll', top, { passive: true })
+    return () => {
+      io.disconnect()
+      window.removeEventListener('scroll', top)
+    }
+  }, [])
+  return active
+}
+
+// A soft pill slides under the link being pointed at, and comes back to rest under the section
+// you're in. It's positioned from the links' own boxes, written as CSS variables on the list.
+const usePill = (active) => {
+  const list = useRef(null)
+  const place = useCallback((id) => {
+    const ul = list.current
+    if (!ul) return
+    const a = id && ul.querySelector(`a[href="#${id}"]`)
+    if (!a) { ul.style.setProperty('--pill-o', '0'); return }
+    ul.style.setProperty('--pill-x', `${a.offsetLeft}px`)
+    ul.style.setProperty('--pill-w', `${a.offsetWidth}px`)
+    ul.style.setProperty('--pill-o', '1')
+  }, [])
+  useLayoutEffect(() => { place(active) }, [active, place])
+  useEffect(() => {
+    const onResize = () => place(active)
+    window.addEventListener('resize', onResize)
+    document.fonts?.ready.then(onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [active, place])
+  return { list, place }
+}
 
 const Navbar = () => {
-  const { chapter } = useSyncExternalStore(subscribe, getSnapshot)
+  const active = useActive()
+  const { list, place } = usePill(active)
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
   const buttonRef = useRef(null)
 
   // Phone menu: freeze the page behind it, focus the first link, close on Escape.
   useEffect(() => {
-    if (!open) return
+    if (!open) return undefined
     lockScroll(true)
     menuRef.current?.querySelector('a')?.focus()
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false) }
@@ -34,69 +81,72 @@ const Navbar = () => {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 z-10 h-px origin-left bg-accent"
-        style={{ transform: 'scaleX(var(--progress))' }}
-      />
-      <div className="container-x relative flex h-14 items-center justify-between border-b border-line bg-surface">
-        <a href="#home" className="logo-link inline-flex items-center gap-2.5 font-display text-[1.1875rem] font-semibold tracking-[-0.02em] text-ink" aria-label={`${profile.name}, back to top`}>
-          <Logo />
-          {profile.name}
-        </a>
+      <div className="nav">
+        <div className="wrap flex h-16 items-center justify-between gap-6">
+          <a href="#home" className="logo-link inline-flex items-center gap-2.5 text-ink md:flex-1" aria-label={`${profile.name}, back to top`}>
+            <Logo />
+            <span className="font-serif text-[1.3125rem] leading-none tracking-[-0.015em]">
+              Neelabja<span className="hidden sm:inline"> Mukhopadhyay</span>
+            </span>
+          </a>
 
-        <nav aria-label="Chapters" className="hidden lg:block">
-          <ul className="label flex items-center gap-1">
-            {chapters.map(({ id, label }) => {
-              // Smaller things sits inside Work on the page, but has its own piece on the console.
-              const active = chapter === id || (id === 'work' && chapter === 'archive')
-              return (
-                <li key={id}>
-                  <a
-                    href={`#${id}`}
-                    aria-current={active ? 'true' : undefined}
-                    className={`block px-3.5 py-2.5 transition-colors duration-300 ${active ? 'bg-ink text-surface' : 'text-ink hover:bg-raised'}`}
-                  >
-                    <Scramble hover duration={420}>{label}</Scramble>
-                  </a>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
-
-        <button
-          ref={buttonRef}
-          type="button"
-          aria-expanded={open}
-          aria-controls="menu"
-          onClick={() => setOpen((o) => !o)}
-          className="meta -mr-2 p-2 text-ink lg:hidden"
-        >
-          {open ? 'Close' : 'Menu'}
-        </button>
-      </div>
-
-      {open && (
-        <div id="menu" ref={menuRef} className="swap-in fixed inset-x-0 bottom-0 top-14 z-40 bg-surface lg:hidden">
-          <nav aria-label="Chapters" className="container-x flex h-full flex-col justify-center pb-16">
-            <ul className="space-y-1">
+          <nav aria-label="Sections" className="hidden md:block">
+            <ul ref={list} className="nav-links" onMouseLeave={() => place(active)}>
               {chapters.map(({ id, label }) => (
                 <li key={id}>
                   <a
                     href={`#${id}`}
-                    onClick={(e) => jump(e, id)}
-                    aria-current={chapter === id ? 'true' : undefined}
-                    className="display-lg block py-1 text-ink"
+                    onMouseEnter={() => place(id)}
+                    onFocus={() => place(id)}
+                    onBlur={() => place(active)}
+                    aria-current={active === id ? 'true' : undefined}
+                    className="nav-link"
                   >
-                    <Scramble hover duration={420}>{label}</Scramble>
+                    {label}
                   </a>
                 </li>
               ))}
             </ul>
-            <div className="mt-12 hairline pt-6">
-              <a href={`mailto:${profile.email}`} className="link meta">{profile.email}</a>
-            </div>
+          </nav>
+
+          <div className="hidden justify-end md:flex md:flex-1">
+            <Button href={`mailto:${profile.email}`} size="sm">Say hello</Button>
+          </div>
+
+          <button
+            ref={buttonRef}
+            type="button"
+            aria-expanded={open}
+            aria-controls="menu"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            onClick={() => setOpen((o) => !o)}
+            className="menu-button md:hidden"
+          >
+            <span className="menu-button__bars" aria-hidden="true"><span /><span /></span>
+            <span className="t-meta">{open ? 'Close' : 'Menu'}</span>
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div id="menu" ref={menuRef} className="fade-in fixed inset-x-0 bottom-0 top-16 z-40 bg-paper md:hidden">
+          <nav aria-label="Sections" className="wrap flex h-full flex-col justify-between pb-10 pt-8">
+            <ul>
+              {chapters.map(({ id, label }, i) => (
+                <li key={id} className="fade-in border-b border-line" style={{ animationDelay: `${i * 60}ms` }}>
+                  <a
+                    href={`#${id}`}
+                    onClick={(e) => jump(e, id)}
+                    aria-current={active === id ? 'true' : undefined}
+                    className="group flex items-center justify-between py-5 text-ink"
+                  >
+                    <span className={`t-h3 ${active === id ? 'italic' : ''}`}>{label}</span>
+                    <span aria-hidden="true" className="arrow arrow-e text-muted">→</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <Button href={`mailto:${profile.email}`} className="self-start">Say hello</Button>
           </nav>
         </div>
       )}

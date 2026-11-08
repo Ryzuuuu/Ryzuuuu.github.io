@@ -212,6 +212,74 @@ const prepareOnce = (scene) => {
   return prepared.get(scene)
 }
 
+// The antenna is a pair of rabbit ears on a weighted base, and the coiled lead is part of the same
+// mesh. So, as with the controllers, the vertex shader does the moving: anything above the base
+// leans about the top of the base, each ear on its own, and the lead on the table never stirs.
+// Measured from the mesh: the base tops out at about y 1.1 and the ears part either side of x 2.93.
+const EARS = { node: 'Lumen_TV_35', pivot: [2.93, 1.1, -2.17], reach: 1.2 }
+const EAR_VERTEX = `
+uniform mat4 uEarToScene;
+uniform mat4 uEarFromScene;
+uniform vec3 uEarPivot;
+uniform vec4 uEarLean;
+vec3 earBend(vec3 p) {
+  vec3 q = (uEarToScene * vec4(p, 1.0)).xyz;
+  float h = max(q.y - uEarPivot.y, 0.0);
+  if (h <= 0.0) return p;
+  // -1 for the left ear, 1 for the right, blended through the hinge so the base never tears.
+  float side = clamp((q.x - uEarPivot.x) * 12.0, -1.0, 1.0);
+  vec2 lean = mix(uEarLean.xy, uEarLean.zw, side * 0.5 + 0.5);
+  q.xz += lean * h;
+  q.y -= 0.5 * dot(lean, lean) * h;
+  return (uEarFromScene * vec4(q, 1.0)).xyz;
+}`
+const EAR_MOVE = `#include <begin_vertex>
+transformed = earBend(transformed);`
+
+const makeEarRig = (scene, toLocal) => {
+  const mesh = scene.getObjectByName(EARS.node)?.getObjectByProperty('isMesh', true)
+  if (!mesh) return null
+  const toScene = toLocal.clone().multiply(mesh.matrixWorld)
+  const uniforms = {
+    uEarToScene: { value: toScene },
+    uEarFromScene: { value: toScene.clone().invert() },
+    uEarPivot: { value: new THREE.Vector3(...EARS.pivot) },
+    uEarLean: { value: new THREE.Vector4() },
+  }
+  const patchVertex = (shader) => {
+    Object.assign(shader.uniforms, uniforms)
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>${EAR_VERTEX}`)
+      .replace('#include <begin_vertex>', EAR_MOVE)
+  }
+  const material = mesh.material
+  const tint = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    tint(shader, renderer)
+    patchVertex(shader)
+  }
+  material.needsUpdate = true
+  mesh.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking })
+  mesh.customDepthMaterial.onBeforeCompile = patchVertex
+
+  // At rest the ears drift a hair, like something on a shelf near an open window. Pointed at,
+  // they hunt for a signal: each ear swings on its own beat, out of step with the other, and
+  // settles back once the pointer leaves. The Contact chapter keeps them gently searching.
+  const lean = uniforms.uEarLean.value
+  const update = (level, t) => {
+    const idle = reducedMotion ? 0 : 0.012
+    const amp = idle + level * 0.075
+    const hunt = level * Math.sin(t * 9) * 0.008
+    lean.set(
+      Math.sin(t * 1.7) * amp - level * 0.03 + hunt,
+      Math.sin(t * 1.1 + 0.6) * amp * 0.6,
+      Math.sin(t * 1.9 + 2.1) * amp + level * 0.03 - hunt,
+      Math.sin(t * 1.3 + 1.4) * amp * 0.6,
+    )
+  }
+  return { update }
+}
+
 const prepareScene = (scene) => {
   scene.traverse((o) => {
     if (!o.isMesh) return
@@ -293,17 +361,18 @@ const prepareScene = (scene) => {
 
   // The parts the hover animations move.
   const pads = PADS.map((pad) => makePadRig(scene, toLocal, pad)).filter(Boolean)
+  const ears = makeEarRig(scene, toLocal)
   const tapes = ['Bricktris_copy_14', 'Super_Lumia_Bros_26'].map((n) => rest(scene, n)).filter(Boolean)
   const reels = ['lent_big_12', 'lent_small_13', 'lent_big001_24', 'lent_small001_25']
     .map((n) => scene.getObjectByName(n)).filter(Boolean)
 
-  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks, pads, tapes, reels }
+  return { proxies, glow, glass, cart, cartY: cart?.position.y ?? 0, meshes, looks, pads, ears, tapes, reels }
 }
 
 const ConsoleModel = ({ onSelect }) => {
   const { scene, animations } = useGLTF(MODEL_URL)
   const { actions } = useAnimations(animations, scene)
-  const { proxies, glow, glass, cart, cartY, meshes, looks, pads, tapes, reels } = useMemo(() => prepareOnce(scene), [scene])
+  const { proxies, glow, glass, cart, cartY, meshes, looks, pads, ears, tapes, reels } = useMemo(() => prepareOnce(scene), [scene])
   const pool = useMemo(() => makePool(), [])
   const spill = useRef()
   const spillLight = useRef()
@@ -311,7 +380,7 @@ const ConsoleModel = ({ onSelect }) => {
   const scanner = useRef()
   const gl = useThree((s) => s.gl)
 
-  const state = useRef({ boot: 0, flash: null, flashT: 0, press: null, screen: null, hop: 1, mode: 'full', scan: 1, over: { about: 0, toolbox: 0, work: 0, archive: 0 } })
+  const state = useRef({ boot: 0, flash: null, flashT: 0, press: null, screen: null, hop: 1, mode: 'full', scan: 1, over: { about: 0, toolbox: 0, work: 0, archive: 0, contact: 0 } })
   const selectRef = useRef(onSelect)
   useEffect(() => { selectRef.current = onSelect }, [onSelect])
 
@@ -440,6 +509,9 @@ const ConsoleModel = ({ onSelect }) => {
     if (over.archive > 0.002) for (const reel of reels) reel.rotateY(dt * 7 * over.archive)
 
     // The console runs up: the mechanism spins hard and the cartridge rises out of its bay.
+    // The ears hunt for a signal while pointed at, and search more gently through Contact.
+    if (ears) ears.update(reducedMotion ? 0 : Math.max(over.contact, chapter === 'contact' ? 0.35 : 0), t)
+
     if (clip) clip.timeScale = damp(clip.timeScale, hovered === 'toolbox' && !reducedMotion ? 3 : chapter === 'toolbox' ? 1.4 : 0.2, 3, dt)
 
     // Each new work reseats the cartridge: it lifts out of the bay and drops back in.

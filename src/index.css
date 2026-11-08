@@ -3,29 +3,30 @@
 @tailwind utilities;
 
 /* ── Palette ──────────────────────────────────────────────────────────────────
-   Crisp white, one confident blue, and amber kept small. Chosen by scoring 32,400 combinations
-   for legibility and for how clearly the console stands off the island, then judged on real
-   renders. The 3D scene and the monitor read these through palette.js. */
+   Warm paper, near-black ink, and one blue: neel, the colour in the name. Everything else is a
+   mix of those three. The 3D scene and the figure plates read these through palette.js, which
+   only understands plain `oklch(L C h)`, so keep the raw values in that form. */
 :root {
-  --paper: oklch(0.985 0.006 252);
-  --paper-raised: oklch(1 0 0);
-  --deep: oklch(0.2 0.06 252);
-  --ink-deep: oklch(0.18 0.045 252);
-  --stone: oklch(0.45 0.045 252);
-  --haze: oklch(0.8 0.03 252);
-  --brand: oklch(0.45 0.15 252);
-  --amber: oklch(0.78 0.15 75);
+  --paper: oklch(0.963 0.008 85);
+  --paper-sunk: oklch(0.935 0.01 85);
+  --paper-raised: oklch(0.985 0.005 85);
+  --ink-deep: oklch(0.21 0.014 265);
+  --stone: oklch(0.47 0.012 265);
+  --haze: oklch(0.74 0.02 260);
+  --brand: oklch(0.46 0.16 264);
+  --brand-light: oklch(0.76 0.11 258);
+  --night: oklch(0.17 0.035 262);
 
-  /* The console's finish, painted over the copper in its textures, the way real hi-fi was made:
-     a satin aluminium body, with the small parts you handle in graphite. */
+  /* The console's finish, painted over the copper in its textures: a satin aluminium body,
+     with the small parts you handle in graphite. */
   --casing: oklch(0.8 0.004 250);
   --casing-metal: 0.7;
   --accessory: oklch(0.52 0.006 250);
   --accessory-metal: 0.35;
 
   /* The island. */
-  --plinth: oklch(0.1 0.004 252);
-  --inlay: oklch(0.97 0.004 252);
+  --plinth: oklch(0.12 0.01 262);
+  --inlay: oklch(0.97 0.004 85);
 
   /* The tube: the only green on the page, so the monitor reads as lit from inside. */
   --phosphor-bg: oklch(0.15 0.1 177);
@@ -33,63 +34,55 @@
   --phosphor: oklch(1 0.1 177);
   --phosphor-soft: oklch(0.7 0.1 177);
   --phosphor-faint: oklch(0.6 0.1 177);
-}
 
-/* ── Tone ─────────────────────────────────────────────────────────────────────
-   Chapters are either light (white) or dark (deep blue). The scroll director flips
-   `data-tone` on <html>; registering the roles lets the whole page cross-fade. */
-@property --surface { syntax: '<color>'; inherits: true; initial-value: #f8fbfe; }
-@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
-@property --ink { syntax: '<color>'; inherits: true; initial-value: #03162a; }
-@property --ink-muted { syntax: '<color>'; inherits: true; initial-value: #3f5a78; }
-@property --line { syntax: '<color>'; inherits: true; initial-value: #c6ccd3; }
-@property --accent { syntax: '<color>'; inherits: true; initial-value: #005a9c; }
-@property --glow { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
-
-:root {
-  --surface: var(--paper);
-  --surface-2: var(--paper-raised);
-  --ink: var(--ink-deep);
-  --ink-muted: var(--stone);
-  --line: color-mix(in oklch, var(--ink-deep) 22%, var(--paper));
-  --accent: var(--brand);
-  --glow: var(--paper-raised);
-
-  --logo-back: var(--brand);
-  --logo-middle: oklch(0.62 0.13 245);
-  --logo-front: oklch(0.8 0.08 240);
-  --logo-lens: var(--ink-deep);
-  --logo-glint: oklch(1 0 0);
-  --logo-dial: var(--brand);
-
+  --progress: 0;
   --fx: 0.7;
   --fy: 0.5;
   --scrim: 0;
-  --progress: 0;
-  --ease: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-soft: cubic-bezier(0.4, 0, 0.1, 1);
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+}
 
-  transition: --surface 0.9s var(--ease-soft), --surface-2 0.9s var(--ease-soft), --ink 0.9s var(--ease-soft),
-    --ink-muted 0.9s var(--ease-soft), --line 0.9s var(--ease-soft), --accent 0.9s var(--ease-soft),
+/* ── Tone ─────────────────────────────────────────────────────────────────────
+   Chapters are light (paper) or dark (night). The scroll director flips `data-tone` on <html>;
+   registering the roles lets the whole page cross-fade between them. Tailwind's colour names
+   (paper, ink, muted, line, accent) point at these roles, never at raw palette values. */
+@property --surface { syntax: '<color>'; inherits: true; initial-value: #f4f1ea; }
+@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: #ece8df; }
+@property --fg { syntax: '<color>'; inherits: true; initial-value: #1b1d24; }
+@property --fg-muted { syntax: '<color>'; inherits: true; initial-value: #5b5f6b; }
+@property --rule { syntax: '<color>'; inherits: true; initial-value: #d6d2c8; }
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #2747b0; }
+@property --glow { syntax: '<color>'; inherits: true; initial-value: #fbfaf6; }
+
+:root {
+  --surface: var(--paper);
+  --surface-2: var(--paper-sunk);
+  --fg: var(--ink-deep);
+  --fg-muted: var(--stone);
+  --rule: oklch(0.86 0.01 85);
+  --accent: var(--brand);
+  --glow: var(--paper-raised);
+
+
+  transition: --surface 0.9s var(--ease-soft), --surface-2 0.9s var(--ease-soft), --fg 0.9s var(--ease-soft),
+    --fg-muted 0.9s var(--ease-soft), --rule 0.9s var(--ease-soft), --accent 0.9s var(--ease-soft),
     --glow 0.9s var(--ease-soft);
 }
 
-:root[data-tone='dark'] {
-  --surface: var(--deep);
-  --surface-2: color-mix(in oklch, var(--deep), var(--brand) 30%);
-  --ink: var(--paper);
-  --ink-muted: var(--haze);
-  --line: color-mix(in oklch, var(--paper) 20%, var(--deep));
-  --accent: var(--amber);
-  --glow: var(--brand);
+:root[data-tone='dark'],
+.on-night {
+  --surface: var(--night);
+  --surface-2: oklch(0.21 0.04 262);
+  --fg: var(--paper);
+  --fg-muted: var(--haze);
+  --rule: oklch(0.32 0.035 262);
+  --accent: var(--brand-light);
+  --glow: oklch(0.36 0.12 262);
 
-  --logo-back: oklch(0.66 0.13 245);
-  --logo-middle: oklch(0.8 0.08 240);
-  --logo-front: oklch(0.92 0.04 240);
-  --logo-lens: var(--ink-deep);
-  --logo-glint: oklch(1 0 0);
-  --logo-dial: oklch(0.8 0.08 240);
 }
+:root[data-tone='dark'] { color-scheme: dark; }
 
 @layer base {
   html {
@@ -97,122 +90,146 @@
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: 5rem;
   }
-  :root[data-tone='dark'] { color-scheme: dark; }
 
   body {
-    @apply bg-surface font-sans text-ink antialiased;
+    @apply bg-paper font-sans text-ink antialiased;
     overflow-x: hidden;
     font-size: 1rem;
-    line-height: 1.5;
-    text-rendering: optimizeLegibility;
+    line-height: 1.6;
+    font-feature-settings: 'ss01', 'cv11';
   }
 
-  h1, h2, h3 {
-    @apply font-display font-semibold;
+  h1, h2, h3, h4 {
+    font-weight: inherit;
   }
 
   p { text-wrap: pretty; }
 
   ::selection {
-    background: var(--amber);
-    color: var(--ink-deep);
+    background: var(--accent);
+    color: var(--surface);
   }
 
   :focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: 5px;
+    outline: 1.5px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 1px;
   }
 }
 
 @layer components {
-  .container-x {
-    /* No max-width: the camera shots are placed in fractions of the viewport, so the copy has to be too. */
-    @apply w-full px-5 sm:px-8 lg:px-12;
+  /* No max-width: the camera shots are placed in fractions of the viewport, so the copy is too. */
+  .wrap {
+    width: 100%;
+    padding-inline: var(--gutter);
   }
 
-  /* Archivo set slightly wide and tight: the voice of a badge on a piece of hardware. */
-  .display-xl,
-  .display-lg,
-  .display-md {
-    @apply font-display font-semibold;
-    font-stretch: 112%;
+  /* ── Type ─────────────────────────────────────────────────────────────────
+     Newsreader for anything that's read as a voice, Geist for the working text, Geist Mono for
+     the facts and figures that sit around it. */
+  .t-display {
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 380;
+    font-size: clamp(3.4rem, 8.2vw, 9.25rem);
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    font-variation-settings: 'opsz' 72;
+  }
+  /* The opening name stays clear of the island on the right. */
+  .t-display--hero { font-size: clamp(3.4rem, 6.5vw, 8.25rem); }
+  .t-h2 {
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 380;
+    font-size: clamp(2.6rem, 5.4vw, 5.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    font-variation-settings: 'opsz' 72;
     text-wrap: balance;
   }
-  .display-xl {
-    font-size: clamp(2.75rem, 4.75vw, 7.25rem);
+  .t-h3 {
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2.4rem, 4.2vw, 4.25rem);
     line-height: 1;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.028em;
+    font-variation-settings: 'opsz' 72;
   }
-  .display-lg {
-    font-size: clamp(2.6rem, 4.4vw, 5.25rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
+  .t-h4 {
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 420;
+    font-size: clamp(1.5rem, 2vw, 1.875rem);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
   }
-  .display-md {
-    font-size: clamp(1.9rem, 2.8vw, 3rem);
-    line-height: 1.05;
-    letter-spacing: -0.03em;
+  .t-lead {
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 380;
+    font-size: clamp(1.375rem, 2.05vw, 1.9rem);
+    line-height: 1.28;
+    letter-spacing: -0.012em;
+    font-variation-settings: 'opsz' 36;
   }
-
-  .lead {
-    font-size: clamp(1.125rem, 1.3vw, 1.3125rem);
+  .t-body {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+  .t-small {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .t-meta {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.75rem;
     line-height: 1.5;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-feature-settings: 'zero', 'ss02';
+  }
+  .t-num {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  em, .italic-serif {
+    font-family: Newsreader, Georgia, serif;
+    font-style: italic;
   }
 
-  .summary {
-    @apply font-display font-medium;
-    font-size: clamp(1.35rem, 1.7vw, 1.75rem);
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-  }
-
-  .label {
-    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em];
-    font-stretch: 110%;
-  }
-
-  .meta {
-    font-size: 0.875rem;
-    line-height: 1.45;
-  }
-
-  .btn {
-    @apply label inline-flex items-center gap-3 border-2 border-ink px-6 py-[1.05rem];
-    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background-color 0.2s, color 0.2s;
-  }
-  .btn-solid { @apply btn bg-ink text-surface; }
-  .btn-solid:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 4px 4px 0 0 var(--accent);
-  }
-  .btn-ghost { @apply btn text-ink hover:bg-ink hover:text-surface; }
-  .btn:active { transform: none; box-shadow: none; }
-
-  /* An underline that withdraws to the right and returns from the left. */
+  /* An underline that slides away to the right and comes back from the left. */
   .link {
     background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
-    padding-bottom: 0.1em;
+    padding-bottom: 0.08em;
   }
   @media (hover: hover) {
-    .link { transition: background-size 0.55s var(--ease); }
+    .link { transition: background-size 0.6s var(--ease); }
     .link:hover { background-size: 0% 1px; background-position: 100% 100%; }
   }
-
-  .panel {
-    @apply pointer-events-auto py-9 lg:p-0;
+  /* Starts bare and draws its underline in on hover. */
+  .link-in {
+    background: linear-gradient(currentColor, currentColor) 100% 100% / 0% 1px no-repeat;
+    padding-bottom: 0.08em;
+    transition: background-size 0.6s var(--ease);
+  }
+  .link-in:hover,
+  .group:hover .link-in {
+    background-size: 100% 1px;
+    background-position: 0 100%;
   }
 
-  .hairline {
-    @apply border-line;
-    border-width: 0;
-    border-top-width: 1px;
+  .arrow {
+    display: inline-block;
+    transition: transform 0.6s var(--ease);
   }
+  .group:hover .arrow-ne { transform: translate(3px, -3px); }
+  .group:hover .arrow-e { transform: translateX(4px); }
+  .group:hover .arrow-s { transform: translateY(3px); }
+
 }
 
 /* ── The exhibit ─────────────────────────────────────────────────────────────────
-   Fixed behind the whole page. Below the desktop layout there's no room beside the copy, so
-   the top half becomes a window onto the console and the copy scrolls away underneath it.
-   The canvas keeps its full-screen size inside the window, so the camera shots don't change. */
+   Fixed behind the whole page; each chapter swings the camera somewhere new. Below the desktop
+   layout there's no room beside the copy, so the top half becomes a window onto the console and
+   the copy scrolls away underneath it. The canvas keeps its full-screen size inside the window,
+   so the camera shots don't change. */
 .exhibit {
   position: fixed;
   inset: 0;
@@ -229,124 +246,11 @@
     z-index: 15;
     overflow: hidden;
     background: var(--surface);
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--rule);
   }
   .exhibit__frame { height: 100svh; }
-  /* Jumps land just under the window. Lenis and native anchors both respect this. */
   html { scroll-padding-top: 50svh; }
 }
-
-/* ── The logo ────────────────────────────────────────────────────────────────────
-   Blooms open on load, its rows of petals turn against each other as the page scrolls, like an
-   aperture, and on hover they open and step round by one blade. */
-.logo {
-  flex: none;
-  width: 1.875rem;
-  height: 1.875rem;
-  overflow: visible;
-}
-.logo__layer--back { transform: rotate(calc(var(--progress) * 180deg)); }
-.logo__layer--middle { transform: rotate(calc(var(--progress) * -135deg)); }
-.logo__layer {
-  transition: rotate 0.9s var(--ease);
-}
-.logo__petal {
-  transition: transform 0.7s var(--ease), fill 0.9s var(--ease-soft);
-  transition-delay: calc(var(--i) * 16ms), 0ms;
-  animation: logo-bloom 1.2s var(--ease) backwards;
-  animation-delay: calc(var(--l) * 160ms + var(--i) * 45ms + 200ms);
-}
-.logo__lens {
-  transition: transform 0.7s var(--ease);
-  animation: logo-bloom 1s var(--ease) 0.1s backwards;
-}
-.logo__lens circle { transition: fill 0.9s var(--ease-soft); }
-@keyframes logo-bloom {
-  from { transform: scale(0.15); opacity: 0; }
-}
-@media (hover: hover) {
-  .logo-link:hover .logo__petal { transform: scale(1.1); }
-  .logo-link:hover .logo__lens { transform: scale(0.84); }
-  .logo-link:hover .logo__layer--back { rotate: 45deg; }
-  .logo-link:hover .logo__layer--middle { rotate: -45deg; }
-}
-
-/* ── The opening screen ──────────────────────────────────────────────────────────
-   Sonar rings spreading out from the island across the page, a soft light that follows the
-   pointer, and layers of copy drifting against it at different depths. */
-.hero-rings {
-  position: fixed;
-  left: calc(var(--fx) * 100%);
-  top: calc(var(--fy) * 100% + 8vh);
-  z-index: -1;
-  width: 0;
-  height: 0;
-  opacity: calc(1 - var(--hero, 0) * 2.5);
-  pointer-events: none;
-}
-.hero-rings > i {
-  position: absolute;
-  left: -40vw;
-  top: -40vw;
-  width: 80vw;
-  height: 80vw;
-  border: 1px solid var(--brand);
-  border-radius: 50%;
-  opacity: 0;
-  animation: sonar 9s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
-  animation-delay: calc(var(--n) * 2.25s);
-}
-@keyframes sonar {
-  0% { transform: scale(0.45, 0.2); opacity: 0; }
-  12% { opacity: 0.4; }
-  100% { transform: scale(1.7, 0.75); opacity: 0; }
-}
-.cursor-light {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: calc(1 - var(--hero, 0) * 2.5);
-  background: radial-gradient(420px circle at var(--cx, -999px) var(--cy, -999px),
-      color-mix(in oklch, var(--brand) 11%, transparent), transparent 70%);
-}
-.parallax-1,
-.parallax-2,
-.parallax-3 { transition: transform 0.9s var(--ease), opacity 1.4s var(--ease-soft); }
-@media (min-width: 1024px) {
-  .parallax-1 { translate: calc(var(--px, 0) * -9px) calc(var(--py, 0) * -6px); }
-  .parallax-2 { translate: calc(var(--px, 0) * -5px) calc(var(--py, 0) * -3px); }
-  .parallax-3 { translate: calc(var(--px, 0) * -2.5px) calc(var(--py, 0) * -1.5px); }
-  .parallax-1, .parallax-2, .parallax-3 { transition: translate 0.9s var(--ease), transform 1.6s var(--ease), opacity 1.4s var(--ease-soft); }
-}
-.rotator-line {
-  font-size: clamp(1.45rem, 2.3vw, 2.6rem);
-  font-weight: 600;
-  font-stretch: 112%;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  white-space: nowrap;
-}
-.rotator {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
-}
-.rotator__word { display: inline-block; white-space: pre; }
-.rotator__char {
-  display: inline-block;
-  white-space: pre;
-  animation: rotor 0.7s var(--ease) both;
-  animation-delay: calc(var(--c) * 28ms);
-}
-@keyframes rotor {
-  from { transform: translate3d(0, 110%, 0); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-
-/* ── Atmosphere ──────────────────────────────────────────────────────────────── */
 
 /* A pool of light that follows the console around the screen. */
 .stage-glow {
@@ -354,14 +258,13 @@
       color-mix(in oklch, var(--glow) 90%, transparent), transparent 72%);
 }
 
-/* Veils only the column the copy sits in and clears before the console starts, so the
-   whole model stays on show in every chapter. */
+/* Veils only the column the copy sits in, and clears before the console starts. */
 .scrim-left,
 .scrim-right {
   --s: var(--surface);
   background-image: linear-gradient(var(--dir),
-      color-mix(in oklch, var(--s) 90%, transparent) 0%,
-      color-mix(in oklch, var(--s) 86%, transparent) 37%,
+      color-mix(in oklch, var(--s) 92%, transparent) 0%,
+      color-mix(in oklch, var(--s) 88%, transparent) 37%,
       color-mix(in oklch, var(--s) 62%, transparent) 41%,
       color-mix(in oklch, var(--s) 26%, transparent) 45%,
       color-mix(in oklch, var(--s) 8%, transparent) 49%,
@@ -375,18 +278,345 @@
   --dir: 270deg;
   opacity: calc(clamp(0, (0.47 - var(--fx)) * 7, 1) * var(--scrim));
 }
-/* A little tooth over everything, as if it were printed. */
-.grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.055;
+
+/* Copy panels take the pointer; the gaps between them let it through to the console. */
+.panel { pointer-events: auto; }
+
+/* ── The logo ────────────────────────────────────────────────────────────────────
+   A blue lotus set like a jewel in a night-blue disc. It blooms open on load, row by row and
+   petal by petal; the flower turns slowly the whole time while a gold satellite circles the rim
+   the other way; the rows counter-turn as the page scrolls. On hover the petals open out, the
+   glow behind them swells. Its colours are its own, so it reads the
+   same on light and dark chapters. */
+.logo {
+  flex: none;
+  width: 2.125rem;
+  height: 2.125rem;
+  overflow: visible;
+  filter: drop-shadow(0 3px 6px oklch(0.2 0.08 265 / 0.28));
+}
+.logo__turn { animation: logo-turn 60s linear infinite; }
+.logo__orbit { animation: logo-turn 9s linear infinite reverse; }
+.logo__layer--back { transform: rotate(calc(var(--progress) * 180deg)); }
+.logo__layer--middle { transform: rotate(calc(var(--progress) * -135deg)); }
+.logo__layer--front { transform: rotate(calc(var(--progress) * 90deg)); }
+.logo__layer { transition: rotate 1.1s var(--ease); }
+.logo__petal {
+  transition: transform 0.8s var(--ease);
+  transition-delay: calc(var(--i) * 18ms);
+  animation: logo-bloom 1.3s var(--ease) backwards;
+  animation-delay: calc(var(--l) * 170ms + var(--i) * 50ms + 250ms);
+}
+.logo__heart {
+  transition: transform 0.8s var(--ease), filter 0.8s var(--ease);
+  animation: logo-bloom 1s var(--ease) 0.15s backwards;
+}
+.logo__glow {
+  transition: transform 0.9s var(--ease), opacity 0.9s var(--ease);
+  opacity: 0.8;
+  animation: logo-breathe 4.5s ease-in-out infinite;
+}
+.logo__disc { animation: logo-bloom 0.9s var(--ease) backwards; }
+@keyframes logo-bloom {
+  from { transform: scale(0.1) rotate(-40deg); opacity: 0; }
+}
+@keyframes logo-turn {
+  to { transform: rotate(360deg); }
+}
+@keyframes logo-breathe {
+  50% { opacity: 0.45; }
+}
+@media (hover: hover) {
+  .logo-link:hover .logo__petal { transform: scale(1.08); }
+  .logo-link:hover .logo__heart { transform: scale(1.15); filter: brightness(1.15); }
+  .logo-link:hover .logo__glow { transform: scale(1.25); }
+  .logo-link:hover .logo__layer--back { rotate: 22.5deg; }
+  .logo-link:hover .logo__layer--middle { rotate: -22.5deg; }
+  .logo-link:hover .logo__layer--front { rotate: 45deg; }
 }
 
-/* ── Scroll reveals ──────────────────────────────────────────────────────────── */
+/* ── Nav ──────────────────────────────────────────────────────────────────────── */
+.nav {
+  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease), backdrop-filter 0.5s;
+  border-bottom: 1px solid transparent;
+}
+:root[data-scrolled] .nav {
+  background: color-mix(in oklch, var(--surface) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom-color: var(--rule);
+}
 
+/* The section links sit in a quiet capsule; a pill slides under the one being pointed at and
+   comes back to rest under the section you're in (Navbar.jsx writes --pill-x and --pill-w). */
+.nav-links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--surface-2) 70%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--rule) 80%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.nav-links::before {
+  content: '';
+  position: absolute;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  left: 0;
+  width: var(--pill-w, 0px);
+  transform: translateX(var(--pill-x, 0px));
+  opacity: var(--pill-o, 0);
+  border-radius: 999px;
+  background: var(--glow);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--fg) 10%, transparent), 0 0 0 1px color-mix(in oklch, var(--rule) 70%, transparent);
+  transition: transform 0.55s var(--ease), width 0.55s var(--ease), opacity 0.35s var(--ease);
+}
+.nav-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  color: var(--fg-muted);
+  transition: color 0.3s var(--ease);
+}
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link[aria-current] { color: var(--fg); }
+.nav-link[aria-current]::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0.2rem;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Phone menu button: two bars that cross into an X. */
+.menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-right: -0.5rem;
+  padding: 0.5rem;
+  color: var(--fg);
+}
+.menu-button__bars {
+  position: relative;
+  width: 18px;
+  height: 10px;
+}
+.menu-button__bars > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.45s var(--ease), top 0.45s var(--ease);
+}
+.menu-button__bars > span:first-child { top: 0; }
+.menu-button__bars > span:last-child { top: calc(100% - 1.5px); }
+.menu-button[aria-expanded='true'] .menu-button__bars > span { top: calc(50% - 0.75px); }
+.menu-button[aria-expanded='true'] .menu-button__bars > span:first-child { transform: rotate(45deg); }
+.menu-button[aria-expanded='true'] .menu-button__bars > span:last-child { transform: rotate(-45deg); }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────────────
+   A pill in ink with its arrow in a round chip. On hover a wash of neel rises up through the
+   pill from the bottom, the chip turns paper and the arrow slips out and back in. `--ghost` is
+   the quieter outline version for secondary actions. */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.4rem 0.4rem 0.4rem 1.35rem;
+  border-radius: 999px;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  color: var(--surface);
+  background: var(--fg);
+  box-shadow: 0 1px 1px color-mix(in oklch, var(--fg) 15%, transparent), 0 8px 24px -12px color-mix(in oklch, var(--fg) 55%, transparent);
+  transition: color 0.5s var(--ease), box-shadow 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--accent);
+  transform: translateY(101%);
+  transition: transform 0.6s var(--ease);
+}
+.btn__icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  color: var(--fg);
+  background: var(--surface);
+  font-size: 0.95em;
+  line-height: 1;
+  transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
+}
+/* The arrow leaves the chip the way it points and comes back in from the other side. */
+.btn__glyph {
+  display: block;
+  --dx: 1;
+  --dy: -1;
+}
+.btn__icon--e .btn__glyph { --dx: 1; --dy: 0; }
+.btn__icon--s .btn__glyph { --dx: 0; --dy: 1; }
+@keyframes btn-arrow {
+  0% { transform: none; }
+  40% { transform: translate(calc(var(--dx) * 160%), calc(var(--dy) * 160%)); }
+  41% { transform: translate(calc(var(--dx) * -160%), calc(var(--dy) * -160%)); }
+  100% { transform: none; }
+}
+.btn--sm { padding: 0.28rem 0.28rem 0.28rem 1.05rem; gap: 0.6rem; font-size: 0.875rem; }
+.btn--sm .btn__icon { width: 1.75rem; height: 1.75rem; }
+.btn--ghost {
+  color: var(--fg);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.btn--ghost .btn__icon { color: var(--surface); background: var(--fg); }
+.btn--plain { padding: 0.7rem 1.2rem; }
+.btn--sm.btn--plain { padding: 0.5rem 0.95rem; }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (hover: hover) {
+  .btn:hover { color: var(--paper); box-shadow: 0 1px 1px color-mix(in oklch, var(--accent) 20%, transparent), 0 12px 30px -12px color-mix(in oklch, var(--accent) 70%, transparent); }
+  .btn:hover::before { transform: none; }
+  .btn:hover .btn__icon { background: var(--paper); color: var(--brand); }
+  .btn:hover .btn__glyph { animation: btn-arrow 0.65s var(--ease); }
+}
+
+/* ── The "currently" card in the opening screen ───────────────────────────────── */
+.now {
+  position: relative;
+  padding: 1.1rem 1.25rem 0.9rem;
+  border-radius: 1.1rem;
+  background: color-mix(in oklch, var(--glow) 72%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--rule) 85%, transparent), 0 18px 40px -28px color-mix(in oklch, var(--fg) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.now__head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--fg-muted);
+}
+/* A live dot, breathing. */
+.now__dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: oklch(0.68 0.16 150);
+}
+.now__dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: now-ping 2.4s var(--ease) infinite;
+}
+@keyframes now-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  70%, 100% { transform: scale(3); opacity: 0; }
+}
+.now__list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+}
+@media (min-width: 640px) {
+  .now__list { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+}
+.now__item {
+  padding-left: 0.85rem;
+  border-left: 1.5px solid color-mix(in oklch, var(--accent) 55%, transparent);
+}
+.now__what {
+  margin-top: 0.3rem;
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+.now__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Figure plates ───────────────────────────────────────────────────────────────
+   Each project's instrument, drawn live in neel on paper, like a plate in a field notebook. */
+.plate {
+  position: relative;
+  aspect-ratio: 1024 / 694;
+  background: var(--paper-raised);
+  box-shadow: 0 0 0 1px var(--rule);
+  overflow: hidden;
+}
+.plate canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Registration marks in the corners. */
+.plate::before,
+.plate::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 1;
+}
+.plate::before { left: 8px; top: 8px; border-left: 1px solid var(--stone); border-top: 1px solid var(--stone); }
+.plate::after { right: 8px; bottom: 8px; border-right: 1px solid var(--stone); border-bottom: 1px solid var(--stone); }
+
+/* ── Project index ───────────────────────────────────────────────────────────── */
+.index-row {
+  transition: color 0.4s var(--ease), padding 0.6s var(--ease);
+}
+@media (hover: hover) {
+  .index:hover .index-row { color: var(--fg-muted); }
+  .index .index-row:hover { color: var(--fg); padding-left: 0.75rem; }
+}
+
+/* ── Reveals ───────────────────────────────────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translate3d(0, 14px, 0);
-  transition: opacity 1.4s var(--ease-soft), transform 1.6s var(--ease);
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 1.1s var(--ease), transform 1.3s var(--ease);
   transition-delay: var(--delay, 0ms);
 }
 .reveal.is-visible {
@@ -394,71 +624,48 @@
   transform: none;
 }
 
-/* Headlines: each letter rises out of its line's mask. The mask opens once they've landed, so
-   letters swelling under the pointer aren't clipped. */
+/* Headlines: each line rises out of its own mask. */
+/* The mask is padded out on every side and pulled back by the same amount, so italic overhangs
+   (the tail of a y, the lean of an M) and descenders sit inside it instead of being cut off. */
 .line-mask {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.2em;
-  margin-bottom: -0.2em;
+  padding: 0.04em 0.22em 0.2em 0.1em;
+  margin: -0.04em -0.22em -0.2em -0.1em;
 }
-.is-visible .line-mask { animation: mask-open 0s linear 2.2s forwards; }
-@keyframes mask-open { to { overflow: visible; } }
-.line-mask > span { display: block; }
-.word { display: inline-block; white-space: nowrap; }
-.char {
-  display: inline-block;
-  transform: translate3d(0, 118%, 0) rotate(5deg);
-  transform-origin: left bottom;
-  transition: transform 1.15s var(--ease);
-  transition-delay: calc(var(--i, 0) * 90ms + var(--c, 0) * 24ms + var(--delay, 0ms));
+.line-mask > span {
+  display: block;
+  transform: translate3d(0, 108%, 0);
+  transition: transform 1.25s var(--ease);
+  transition-delay: calc(var(--i, 0) * 110ms + var(--delay, 0ms));
 }
-.is-visible .char { transform: none; }
+.is-visible .line-mask > span { transform: none; }
 
-/* Fast scrolling leans the headlines, so the type feels the same momentum as the console. */
-.display-lg,
-.display-md {
-  transform: skewY(calc(var(--lean, 0) * 1deg));
-  transform-origin: left center;
-}
-
-/* Paragraphs light up word by word as they're scrolled through. */
-.w {
-  opacity: 0.2;
-  transition: opacity 0.45s var(--ease-soft);
-}
-.w.on { opacity: 1; }
-
-/* Hairlines draw themselves in. */
-.rule {
+/* Hairlines draw themselves across. */
+.draw {
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 1.8s var(--ease) var(--delay, 0ms);
+  transition: transform 1.6s var(--ease) var(--delay, 0ms);
 }
-.is-visible .rule,
-.rule.is-visible {
-  transform: none;
-}
+.is-visible .draw,
+.draw.is-visible { transform: none; }
 
-@keyframes swap-in {
-  from { opacity: 0; transform: translate3d(0, 5px, 0); }
+@keyframes fade-in {
+  from { opacity: 0; transform: translate3d(0, 4px, 0); }
   to { opacity: 1; transform: none; }
 }
-.swap-in { animation: swap-in 0.9s var(--ease) both; }
+.fade-in { animation: fade-in 0.8s var(--ease) both; }
 
-/* The line under "Scroll": a slow drop, over and over. */
-@keyframes drop {
-  0% { transform: scaleY(0); transform-origin: top; }
-  45% { transform: scaleY(1); transform-origin: top; }
-  55% { transform: scaleY(1); transform-origin: bottom; }
-  100% { transform: scaleY(0); transform-origin: bottom; }
+/* A little tooth over everything, as if it were printed. */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  mix-blend-mode: multiply;
 }
-.drop { animation: drop 2.8s var(--ease-soft) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { transition: none; }
-  .logo__layer { transform: none; }
-  .reveal, .char, .w, .rule { opacity: 1; transform: none; transition: none; }
+  .logo__layer, .logo__turn, .logo__orbit, .logo__glow { transform: none; animation: none; }
+  .reveal, .line-mask > span, .draw { opacity: 1; transform: none; transition: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

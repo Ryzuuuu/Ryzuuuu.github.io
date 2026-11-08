@@ -2,9 +2,9 @@
 
 **Live site: https://ryzuuuu.github.io/**
 
-A one-page portfolio built around a 3D retro console standing on a teal island. The console stays fixed behind the page and every chapter does something to it: the **how a project goes** steps rebuild it from wireframe to clay to finished, **About** turns to the monitor, **Tools** opens up the mechanism, each **work** reloads the cartridge and runs that project's instrument on the monitor, and **Contact** sets the antenna broadcasting. Drag to turn it, or click a piece (the monitor, console, controllers, cassettes or antenna) to jump to its chapter.
+A one-page portfolio, set like a printed monograph: warm paper, near-black ink and one blue (neel, the colour in the name). A 3D retro console stands fixed behind the page and every chapter does something to it: the **how a project goes** steps rebuild it from wireframe to clay to finished, **About** turns to the monitor, **Tools** opens up the mechanism, each **work** reloads the cartridge and runs that project's instrument on the monitor, and **Contact** sets the antenna broadcasting. Point at the antenna and its ears swing round hunting for a signal while it sends out pulses; they stop the moment you look away. Drag to turn it, or click a piece to jump to its chapter. On phones the console sits in a window over the top half of the screen, and each project also gets a live figure plate under its copy.
 
-Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set in Archivo and Tiro Bangla.
+Built with React 19, Vite, React Three Fiber, drei, Lenis and Tailwind CSS. Set in Newsreader, Geist, Geist Mono and Tiro Bangla.
 
 ## Run it
 
@@ -22,43 +22,26 @@ Live at **https://ryzuuuu.github.io/**. Every push to `main` runs [`.github/work
 
 ## Editing content
 
-All copy lives in **`src/constants.js`**: profile, the intro, chapters, the three process steps, about, tools, projects and side projects. Section layouts are in `src/sections/*`. The monitor reads from the same file, so it stays in sync.
+All copy lives in **`src/constants.js`**: profile, the intro, sections, the three process steps, about, tools, projects and side projects. Section layouts are in `src/sections/*`. The figure plates and the console's monitor read from the same file, so they stay in sync.
 
-Each project has an `id` that selects its instrument in `src/canvas/instruments.js`. Instruments use the project's real thresholds and formulas where it has them, and anything invented for the picture is marked SIMULATED on screen.
+Each project has an `id` that selects its instrument in `src/canvas/instruments.js`. Instruments use the project's real thresholds and formulas where it has them, and anything invented for the picture is marked SIMULATED on screen. An instrument is a pure function of time drawn on a 2D canvas, so the same code paints the plates on the page (`src/components/Plate.jsx`, neel on paper) and the console's monitor (`src/canvas/MonitorScreen.jsx`, phosphor on glass).
 
-The "last commit" line on the opening screen comes from GitHub's public events API, requested by the visitor's browser and cached for 30 minutes. If GitHub refuses, the line doesn't appear.
+The "last commit" line on the opening screen comes from GitHub's public events API, requested by the visitor's browser and cached for 30 minutes. If GitHub refuses, the line stays empty.
 
 ## Brand
 
-The mark is a blue lotus seen from above (Neelabja means blue lotus), with its petals set like the blades of a camera aperture around a lens. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
+The mark is a blue lotus seen from above (Neelabja means blue lotus): rows of slender petals, offset by half a petal and shading from a pale base to a blue tip, round the flower's golden heart. Its geometry lives in one place, **`src/brand/mark.js`**, and both of these draw from it:
 
-- `src/brand/Logo.jsx`: the logo on the site. Each row of petals is its own group, so it blooms in on load, turns with the scroll and opens on hover.
+- `src/brand/Logo.jsx`: the logo on the site. The flower turns slowly the whole time, and each row of petals is its own group, so it blooms in on load, the rows counter-turn with the scroll, and it opens on hover.
 - `public/brand/*.svg`: standalone files, written by `pnpm brand`, which also writes the favicon.
 
 There are two optical sizes. `full` has the dial and three rows of petals, for about 48 px and up. `compact` is redrawn with fewer, bolder parts, for nav bars and favicons. Each comes in three colourways: `brand` for light backgrounds, `reversed` for dark, and `mono`, which takes the colour of the surrounding text.
 
-## Colour
+## Colour and type
 
-The palette sits at the top of **`src/index.css`** (`--paper`, `--deep`, `--brand`, `--amber`, `--plinth`, `--casing`, …): crisp white, one confident blue, amber kept small. The monitor has its own `--phosphor` colours, the only green on the page. Nothing else hard-codes a colour:
+The palette sits at the top of **`src/index.css`** (`--paper`, `--ink`, `--brand`, `--plinth`, `--casing`, …). Tailwind classes (`bg-paper`, `text-ink`, `text-muted`, `border-line`, `text-accent`) map to tone *roles* (`--surface`, `--fg`, …), never to raw palette values. Each chapter is `data-tone="light"` or `"dark"`; the director flips it on `<html>` and the registered roles cross-fade. The plinth, the console's casing, the monitor and the figure plates read the raw palette through `src/palette.js`, which only parses plain `oklch(L C h)` values.
 
-- Tailwind classes (`bg-surface`, `text-ink`, `text-muted`, `border-line`, `text-accent`) map to *roles* that point at palette variables.
-- Each chapter is `data-tone="light"` or `"dark"`. As you scroll, the director flips `data-tone` on `<html>`, the roles swap, and the whole page cross-fades between white and deep blue.
-- The plinth and the monitor read these variables through `src/palette.js`. `--casing` repaints the copper in the console's textures in the shader (`ConsoleModel.jsx`), keeping the labels, artwork and some of the wear.
-
-## How the page drives the exhibit
-
-Any element with **`data-shot`** is a scroll anchor. While the middle of the viewport is inside it, the camera holds that shot; near the boundary it cross-fades into the next one. Below 1024 px the console stays in a fixed window over the top half of the screen, and the copy scrolls underneath it.
-
-| Attribute | Effect |
-| --- | --- |
-| `data-shot="about"` | Camera shot from `src/canvas/shots.js` (target, angle, distance, where it sits on screen) |
-| `data-param="2"` | Passed to the shot, e.g. which work or which process step |
-| `data-screen="work-2"` | What the monitor runs (`instruments.js`); defaults to the shot name. `process-0`/`process-1` also switch the console to wireframe/clay |
-| `data-chapter="work"` | Which nav item is active and which piece glows |
-| `data-tone="dark"` | Light or dark page colours while this chapter leads |
-| `data-reveal` / `.reveal` | Animate in the first time it scrolls into view |
-
-To add a section, give it a `data-shot`, add a shot and a caption in `shots.js`, and optionally a monitor screen in `instruments.js`.
+Type roles are classes in the same file: `.t-display`, `.t-h2`, `.t-h3`, `.t-h4` and `.t-lead` in Newsreader, `.t-body` and `.t-small` in Geist, `.t-meta` and `.t-num` in Geist Mono.
 
 ## Structure
 
@@ -69,32 +52,29 @@ src/
 ├── palette.js               # Reads the CSS palette for three.js and canvas
 ├── constants.js             # All editable content
 ├── brand/                   # The logo: geometry (mark.js) and component (Logo.jsx)
-├── index.css                # Palette, tone roles, type scale, reveal motion
+├── index.css                # Palette, type roles, plates, reveal motion
 ├── components/
-│   ├── Navbar.jsx           # Chapter nav, progress line, phone menu
-│   ├── Lines.jsx            # Headlines whose letters rise out of a mask
-│   ├── Scramble.jsx         # Small labels that decode from noise
-│   ├── ScrubText.jsx        # Paragraphs that light up word by word as you scroll
-│   ├── CountUp.jsx          # Figures that count up when first seen
-│   ├── SectionHeading.jsx   # Chapter name, headline, intro
-│   ├── ExhibitCaption.jsx   # Placard saying what the monitor is running
-│   ├── ExhibitLoader.jsx    # Thin progress line, drawn where the exhibit will appear
+│   ├── Navbar.jsx           # Section nav with a sliding pill on the active section, phone menu
+│   ├── Button.jsx           # The pill button with its arrow chip
+│   ├── Lines.jsx            # Headlines whose lines rise out of a mask
+│   ├── Plate.jsx            # A project's instrument on paper (phones), drawn while on screen
+│   ├── ExhibitCaption.jsx   # Figure caption saying what the monitor is running
+│   ├── ExhibitLoader.jsx    # Thin progress line while the console downloads
 │   └── SceneBoundary.jsx    # Hides the 3D scene if WebGL fails
 ├── hooks/
 │   ├── useReveal.js         # Marks elements visible on first scroll into view
-│   ├── useLiveType.js       # Headline letters swell near the pointer
 │   └── useLastPush.js       # Most recent public push, from GitHub
 ├── sections/                # Hero, Process, About, Toolbox, Work, Contact, Colophon
-└── canvas/                  # Lazy-loaded 3D chunk (except shots.js / targets.js)
+└── canvas/                  # Lazy-loaded 3D chunk (except shots.js, targets.js, instruments.js)
     ├── Stage.jsx            # <Canvas>, lights, follow spot, the island leaning into scrolls
     ├── CameraRig.jsx        # Blends shots, damps the camera, reacts to scroll speed
-    ├── ConsoleModel.jsx     # GLB, shadows, wireframe/clay/finished, glow, cartridge, picking
-    ├── MonitorScreen.jsx    # The tube: bloom, scanlines, CRT channel change, cursor tracking
-    ├── instruments.js       # Everything drawn on the tube, one instrument per project
-    ├── Plinth.jsx           # The island: teal slab, bright lip, wine inlay, shadow/glow pool
-    ├── Signal.jsx           # Ripples from the antenna during Contact
+    ├── ConsoleModel.jsx     # GLB, shadows, glow, cartridge, picking
+    ├── MonitorScreen.jsx    # The tube: bloom, scanlines, CRT channel change
+    ├── instruments.js       # Everything drawn on the plates and the tube, one per project
+    ├── Plinth.jsx           # The turntable
+    ├── Signal.jsx           # Pulses from the antenna while it's hovered and during Contact
     ├── shots.js             # Camera shots and captions (no three.js imports)
-    └── targets.js           # Which piece opens which chapter; shared drag/focus state
+    └── targets.js           # Which piece jumps to which section; shared drag state
 public/
 ├── console.glb              # Optimized model, full textures (~5.4 MB)
 ├── console-phone.glb        # Same model, quarter-size textures (~3 MB)
@@ -104,11 +84,12 @@ public/
 ## Performance notes
 
 - **Scrolling never re-renders React.** One animation loop runs Lenis and writes camera state and CSS custom properties directly; React only hears when the chapter, tone, monitor screen or hovered piece changes.
+- **Any element with `data-shot` is a camera anchor** (`data-param`, `data-screen`, `data-chapter`, `data-tone` alongside it). To add a chapter, give it a `data-shot` and add a shot and caption in `shots.js`.
 - **three.js loads after the text.** The 3D scene is a separate chunk, and devices without WebGL never download it.
-- **Pixel ratio is capped at 1.5** and drops to 1 if the frame rate falls. The environment map is baked once; the key light casts real-time shadows on desktop only.
+- **Plates only draw while visible**, at 30 fps rather than every display refresh, sized to the device pixel ratio.
+- **Pixel ratio is capped at 1.5** in the 3D scene and drops to 1 if the frame rate falls. Real-time shadows are desktop only, and phones get `console-phone.glb` with quarter-size textures.
 - **Picking uses invisible boxes**, not the 110k-vertex model, so mouse moves cost almost nothing.
-- **The model keeps all 32 of its original PBR textures at ~5.4 MB, down from ~100 MB.** It's built from the Sketchfab download with WebP textures (2048 px for the main colour maps, smaller for the rest), no tangents, light simplification, quantization and meshopt compression. Phones get `console-phone.glb` with quarter-size textures and no real-time shadows. drei decodes meshopt out of the box.
-- Respects `prefers-reduced-motion`: no smooth scrolling, the camera cuts instead of gliding, the monitor shows still frames, and idle motion stops.
+- Respects `prefers-reduced-motion`: no smooth scrolling, no reveals, the monitor and plates show still frames, and the console stops idling.
 
 ## Deploying to GitHub Pages
 
@@ -116,4 +97,4 @@ This is a user site (`Ryzuuuu.github.io`), so Vite's default `base: '/'` is corr
 
 ## Credits
 
-3D model: [Lumen VGS Pack](https://sketchfab.com/3d-models/lumen-vgs-pack-f1c6f36076154777809b30a2e1c50ba3) by dark_igorek on Sketchfab. Check the model's license on Sketchfab before you publish.
+The 3D console is based on [Lumen VGS Pack](https://sketchfab.com/3d-models/lumen-vgs-pack-f1c6f36076154777809b30a2e1c50ba3) by dark_igorek, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes: recoloured, compressed, and animated in code.

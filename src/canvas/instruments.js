@@ -11,9 +11,9 @@ export const W = 1024
 export const H = 694
 const M = 64
 
-const display = (px, weight = 600) => `${weight} ${px}px Archivo, system-ui, sans-serif`
+const display = (px, weight = 500) => `${weight} ${px}px Geist, system-ui, sans-serif`
 // The screen is seen small, so the fine print is set larger than it looks like it should be.
-const small = (px, weight = 500) => `${weight} ${px}px Archivo, system-ui, sans-serif`
+const small = (px, weight = 400) => `${weight} ${px}px 'Geist Mono', ui-monospace, monospace`
 export const FONTS = [display(64), small(20), small(20, 500)]
 
 const TAU = Math.PI * 2
@@ -233,7 +233,7 @@ export const makeInstruments = (ctx, ink) => {
 
     // A floor from a store_layout.json. The foot of the box decides the zone; staff excluded.
     storesight: (t) => {
-      chrome('CAM 01', 'SIMULATED', '')
+      chrome('SHOP FLOOR', 'SIMULATED', '')
       const fx = M
       const fy = 112
       const fw = 610
@@ -449,7 +449,7 @@ export const makeInstruments = (ctx, ink) => {
   const cards = {
     // The tracker. A box follows the visitor's pointer, with the lag a real one would have.
     hero: (t, { pointer }) => {
-      chrome('TRACKING', 'CAM 00', '')
+      chrome('HELLO', 'POINTER', '')
       const fx = M
       const fy = 112
       const fw = W - M * 2
@@ -472,9 +472,7 @@ export const makeInstruments = (ctx, ink) => {
       const label = live ? `you  ${conf}` : 'searching'
       const ly = by - h / 2 - 12
       text(label, clamp(bx - w / 2, fx, fx + fw - 180), ly < fy + 22 ? by + h / 2 + 28 : ly, { font: small(21, 500) })
-      const secs = Math.floor(pointer.dwell)
       text(`X ${pointer.x.toFixed(2)}  Y ${pointer.y.toFixed(2)}`, M, H - 44, { font: small(18), color: ink.soft, spacing: 1 })
-      text(`ON PAGE ${pad(Math.floor(secs / 60))}:${pad(secs % 60)}`, W - M, H - 44, { font: small(18), color: ink.soft, align: 'right', spacing: 1 })
     },
 
     'process-0': (t) => {
@@ -586,9 +584,9 @@ export const makeInstruments = (ctx, ink) => {
     },
 
     colophon: () => {
-      chrome('END OF TAPE', '')
+      chrome(profile.first.toUpperCase(), '')
       text('Thanks for', W / 2, 320, { font: display(128), align: 'center', spacing: -3 })
-      text('watching.', W / 2, 450, { font: display(128), align: 'center', spacing: -3 })
+      text('reading.', W / 2, 450, { font: display(128), align: 'center', spacing: -3 })
     },
   }
 

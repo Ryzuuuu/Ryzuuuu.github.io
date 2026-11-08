@@ -11,7 +11,6 @@ import Work from './sections/Work'
 import Contact from './sections/Contact'
 import Colophon from './sections/Colophon'
 import { startDirector } from './director'
-import { useLiveType } from './hooks/useLiveType'
 import { useReveal } from './hooks/useReveal'
 
 // three.js is the heaviest dependency by far; load it after the copy is on screen.
@@ -28,24 +27,19 @@ const hasWebGL = (() => {
 
 const App = () => {
   useReveal()
-  useLiveType()
   useEffect(() => startDirector(), [])
 
   return (
     <>
       <a
         href="#main"
-        className="meta sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-ink focus:px-4 focus:py-3 focus:text-surface"
+        className="t-meta sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-ink focus:px-4 focus:py-3 focus:text-paper"
       >
         Skip to content
       </a>
 
       {/* Back to front: the light, the console, the scrims, then the copy. */}
       <div aria-hidden="true" className="stage-glow pointer-events-none fixed inset-0 z-[-2] hidden lg:block" />
-      <div aria-hidden="true" className="hero-rings hidden lg:block">
-        {[0, 1, 2, 3].map((n) => <i key={n} style={{ '--n': n }} />)}
-      </div>
-      <div aria-hidden="true" className="cursor-light hidden lg:block" />
       {hasWebGL && (
         <SceneBoundary>
           <Suspense fallback={<ExhibitLoader />}>

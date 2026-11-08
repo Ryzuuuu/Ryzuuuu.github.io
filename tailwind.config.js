@@ -1,5 +1,5 @@
-// Colours resolve to the CSS variables in src/index.css, so the palette lives in one place
-// and the light/dark tone switch (which swaps those variables) restyles everything at once.
+// Colours resolve to the tone roles in src/index.css, so a chapter's light/dark switch restyles
+// everything at once.
 const token = (name) => `color-mix(in oklch, var(--${name}) calc(<alpha-value> * 100%), transparent)`
 
 /** @type {import('tailwindcss').Config} */
@@ -8,16 +8,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: token('surface'),
-        raised: token('surface-2'),
-        ink: token('ink'),
-        muted: token('ink-muted'),
-        line: token('line'),
+        paper: token('surface'),
+        sunk: token('surface-2'),
+        ink: token('fg'),
+        muted: token('fg-muted'),
+        line: token('rule'),
         accent: token('accent'),
+        night: token('night'),
       },
       fontFamily: {
-        display: ['Archivo', 'system-ui', 'sans-serif'],
-        sans: ['Archivo', 'system-ui', 'sans-serif'],
+        serif: ['Newsreader', 'Georgia', 'serif'],
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
         bengali: ['"Tiro Bangla"', 'serif'],
       },
       screens: {

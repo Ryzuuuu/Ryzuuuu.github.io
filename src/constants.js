@@ -15,12 +15,14 @@ export const profile = {
 }
 
 export const intro = {
+  lede: 'I build things that have to make sense of a camera, a microphone or a sensor, and then keep working once they leave my laptop.',
   statement:
     'I study computer science at VIT Bhopal. Most of what I make has to understand a camera, a microphone or a sensor, then survive leaving my laptop.',
   verbs: ['see', 'hear', 'predict', 'reason', 'speak'],
+  // What's on the desk right now, for the card in the opening screen.
   now: [
-    ['FOSSEE, IIT Bombay', '3D bridge models for Osdag'],
-    ['Travarsa', 'AI agents and computer vision'],
+    { org: 'FOSSEE', where: 'IIT Bombay', what: 'Building 3D bridge models for Osdag, an open-source structural design tool.' },
+    { org: 'Travarsa', what: 'Building AI agents, and the computer vision that lets them see.' },
   ],
 }
 
@@ -119,7 +121,7 @@ export const projects = [
     body: 'It follows people around the shop and works out who went where, who joined the billing queue and who gave up on it. Staff are spotted by their uniform and left out of the counts. Otherwise the most loyal customer in the shop is always the cashier.',
     figure: { value: '8', note: 'kinds of event it logs, from walking in to giving up on the queue' },
     stack: 'YOLOv8, ByteTrack, FastAPI, SQLite',
-    instrument: 'A made-up shop floor, being watched',
+    instrument: 'A made-up shop floor, counted as people move through it',
     repo: 'https://github.com/Ryzuuuu/StoreSight',
   },
   {

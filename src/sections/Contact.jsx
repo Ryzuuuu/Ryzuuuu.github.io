@@ -1,9 +1,9 @@
 import { useState } from 'react'
+import Button from '../components/Button'
 import Lines from '../components/Lines'
-import Scramble from '../components/Scramble'
-import ScrubText from '../components/ScrubText'
 import { contact, profile } from '../constants'
 
+// The camera finds the antenna, which starts broadcasting; the copy sits to its right.
 const Contact = () => {
   const [copied, setCopied] = useState(false)
 
@@ -18,29 +18,23 @@ const Contact = () => {
   }
 
   return (
-    <section id="contact" data-chapter="contact" data-tone="light" data-shot="contact" className="relative">
-      <div className="container-x grid min-h-[70vh] lg:min-h-[130vh] items-center pb-24 lg:grid-cols-12 lg:py-32">
+    <section id="contact" data-chapter="contact" data-tone="light" data-shot="contact" aria-labelledby="contact-heading" className="relative">
+      <div className="wrap grid min-h-[70vh] items-center pb-24 lg:min-h-[130vh] lg:grid-cols-12 lg:py-32">
         <div className="panel lg:col-span-5 lg:col-start-8">
-          <p data-reveal className="reveal label text-muted"><Scramble>Contact</Scramble></p>
-          <Lines lines={contact.title} className="display-lg mt-5" delay={80} />
-          <ScrubText text={contact.body} className="lead mt-7" />
-
-          <a
-            href={`mailto:${profile.email}`}
-           
-            className="reveal link mt-10 inline-block font-display text-[clamp(1.5rem,2.4vw,2.5rem)] font-semibold tracking-[-0.015em]"
-            style={{ '--delay': '320ms' }}
-          >
-            {profile.email}
-          </a>
-
-          <div className="reveal meta mt-5 flex gap-6 text-muted" style={{ '--delay': '400ms' }}>
-            <button type="button" onClick={copyEmail} className="transition-colors hover:text-ink">
-              <span aria-live="polite">{copied ? 'Copied' : 'Copy address'}</span>
-            </button>
-            <a href={profile.github} target="_blank" rel="noreferrer" className="transition-colors hover:text-ink">
-              GitHub
+          <p data-reveal className="reveal t-meta text-muted">Contact</p>
+          <Lines id="contact-heading" lines={[['Say ', { em: 'hello.' }]]} className="t-display mt-5" delay={60} />
+          <p className="reveal t-lead mt-8 max-w-[30ch]" style={{ '--delay': '160ms' }}>{contact.body}</p>
+          <div className="reveal mt-10 border-t border-ink pt-5" style={{ '--delay': '260ms' }}>
+            <a href={`mailto:${profile.email}`} className="group inline-flex flex-wrap items-baseline gap-x-3">
+              <span className="t-h4 link text-[clamp(1.5rem,2.3vw,2.4rem)]">{profile.email}</span>
+              <span aria-hidden="true" className="arrow arrow-ne text-muted">↗</span>
             </a>
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <Button as="button" type="button" onClick={copyEmail} ghost size="sm" dir={null}>
+                <span aria-live="polite">{copied ? 'Copied ✓' : 'Copy address'}</span>
+              </Button>
+              <Button href={profile.github} target="_blank" rel="noreferrer" ghost size="sm">GitHub</Button>
+            </div>
           </div>
         </div>
       </div>
