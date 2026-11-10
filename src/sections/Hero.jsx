@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { intro, profile } from '../constants'
-import { timeAgo, useLastPush } from '../hooks/useLastPush'
+import { GRADIENT } from '../palette'
 import Button from '../components/Button'
+import GradientText from '../bits/GradientText'
+import VariableProximity from '../bits/VariableProximity'
 
 const istNow = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })
 
@@ -14,66 +16,53 @@ const LocalTime = () => {
   return <span className="t-num">{time}</span>
 }
 
-const LastPush = () => {
-  const push = useLastPush()
-  if (!push) return null
-  return (
-    <a href={`${profile.github}/${push.repo}`} target="_blank" rel="noreferrer" className="now__commit fade-in group">
-      <span className="text-muted">Pushed to</span> <span className="link-in text-ink">{push.repo}</span>
-      <span className="text-muted"> · {timeAgo(push.date)}</span>
-    </a>
-  )
-}
-
-// What's on the desk right now: a small card with a live dot, one line per place, and the
-// latest commit and the time in India along the bottom.
-const Now = () => (
-  <div className="now">
-    <p className="now__head t-meta">
-      <span className="now__dot" aria-hidden="true" /> Currently
-    </p>
-    <ul className="now__list">
-      {intro.now.map(({ org, where, what }) => (
-        <li key={org} className="now__item">
-          <p className="t-meta"><span className="text-accent">{org}</span>{where && <span className="text-muted"> · {where}</span>}</p>
-          <p className="now__what">{what}</p>
-        </li>
-      ))}
-    </ul>
-    <div className="now__foot t-meta">
-      <LastPush />
-      <span className="ml-auto whitespace-nowrap"><LocalTime /> <span className="text-muted">IST</span></span>
-    </div>
-  </div>
-)
+// The name is set in a variable font, so each letter can put on weight as the pointer nears it.
+const [FIRST, LAST] = profile.name.split(' ')
+const ROMAN = ["'wght' 400, 'opsz' 144, 'SOFT' 30, 'WONK' 0", "'wght' 780, 'opsz' 144, 'SOFT' 100, 'WONK' 0"]
+const ITALIC = ["'wght' 340, 'opsz' 144, 'SOFT' 100, 'WONK' 1", "'wght' 720, 'opsz' 144, 'SOFT' 100, 'WONK' 1"]
 
 // The opening screen. The console stands to the right on its island; the copy keeps to the
-// left, which stays clear of the plinth at every aspect ratio.
-const Hero = () => (
-  <section id="home" data-chapter="home" data-tone="light" data-shot="hero" className="relative flex min-h-[100svh] flex-col justify-center">
-    <div className="wrap pb-16 pt-[54svh] lg:pb-10 lg:pt-28">
-      <div className="panel lg:max-w-[42%]">
-        <p className="reveal flex flex-wrap items-baseline gap-x-4 gap-y-1 text-muted">
-          <span className="t-meta">Portfolio · B.Tech CSE, VIT Bhopal · 2027</span>
-          <span lang="bn" className="font-bengali text-[0.9375rem]">{profile.bengali}</span>
-        </p>
-        <h1 data-reveal aria-label={profile.name} className="t-display t-display--hero mt-6 lg:mt-8" style={{ '--delay': '120ms' }}>
-          <span aria-hidden="true" className="line-mask" style={{ '--i': 0 }}><span>Neelabja</span></span>
-          <span aria-hidden="true" className="line-mask" style={{ '--i': 1 }}><span><em className="tracking-[-0.045em]">Mukhopadhyay</em></span></span>
-        </h1>
-        <p className="reveal t-lead mt-8 max-w-[30ch] lg:mt-10" style={{ '--delay': '420ms' }}>
-          {intro.lede}
-        </p>
-        <div className="reveal mt-9 flex flex-wrap items-center gap-3" style={{ '--delay': '560ms' }}>
-          <Button href="#work" dir="s">See the work</Button>
-          <Button href={`mailto:${profile.email}`} ghost>Get in touch</Button>
-        </div>
-        <div className="reveal mt-10" style={{ '--delay': '700ms' }}>
-          <Now />
+// left, and only the name runs out past its column, above the plinth.
+const Hero = () => {
+  const name = useRef(null)
+  const letters = (label, [from, to]) => (
+    <VariableProximity label={label} containerRef={name} radius={240} falloff="gaussian" smoothing={0.14} fromFontVariationSettings={from} toFontVariationSettings={to} />
+  )
+
+  return (
+    <section id="home" data-chapter="home" data-tone="dark" data-shot="hero" className="relative flex min-h-[100svh] flex-col justify-center">
+      <div className="wrap pb-16 pt-[54svh] lg:pb-10 lg:pt-28">
+        <div className="panel lg:max-w-[42%]">
+          <p className="reveal t-meta flex items-center gap-4 text-muted">
+            <span className="text-spark">№ 01</span>
+            <span className="hero-rule" aria-hidden="true" />
+            <span>Portfolio, 2027</span>
+          </p>
+          <h1 ref={name} data-reveal aria-label={profile.name} className="t-display t-display--hero mt-7 lg:mt-9" style={{ '--delay': '120ms' }}>
+            <span aria-hidden="true" className="line-mask" style={{ '--i': 0 }}><span>{letters(FIRST, ROMAN)}</span></span>
+            <span aria-hidden="true" className="line-mask" style={{ '--i': 1 }}>
+              <span>
+                <em><GradientText colors={[...GRADIENT, GRADIENT[1]]} animationSpeed={6} scale={2}>{letters(LAST, ITALIC)}</GradientText></em>
+              </span>
+            </span>
+          </h1>
+          <p className="reveal t-lead mt-8 max-w-[30ch] lg:mt-10" style={{ '--delay': '420ms' }}>
+            {intro.lede}
+          </p>
+          <div className="reveal mt-9 flex flex-wrap items-center gap-3" style={{ '--delay': '560ms' }}>
+            <Button href="#work" dir="s">See the work</Button>
+            <Button href={`mailto:${profile.email}`} ghost>Get in touch</Button>
+          </div>
+          <p className="reveal t-meta mt-10 flex flex-wrap items-center gap-x-4 gap-y-2 text-muted lg:mt-12" style={{ '--delay': '700ms' }}>
+            <span>B.Tech CSE, VIT Bhopal</span>
+            <span className="hero-rule" aria-hidden="true" />
+            <span><span className="text-ink"><LocalTime /></span> IST</span>
+            <a href="#process" className="ml-auto text-ink">Scroll <span aria-hidden="true" className="scroll-cue">↓</span></a>
+          </p>
         </div>
       </div>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
 export default Hero

@@ -1,4 +1,5 @@
 import Lines from '../components/Lines'
+import ScrollReveal from '../bits/ScrollReveal'
 import { about } from '../constants'
 
 // The camera turns to the monitor, which sits to the left of the copy in this shot.
@@ -11,9 +12,9 @@ const About = () => (
         <Lines id="about-heading" lines={['I point cameras', [{ em: 'at hands.' }]]} className="t-h2 mt-5" delay={60} />
         <div className="mt-9 space-y-5">
           {about.paragraphs.map((p, i) => (
-            <p key={p.slice(0, 20)} className={`reveal ${i === 0 ? 't-lead' : 't-body text-muted'}`} style={{ '--delay': `${160 + i * 80}ms` }}>
+            <ScrollReveal key={p.slice(0, 20)} containerClassName={`sr ${i === 0 ? 't-lead' : 't-body text-muted'}`} baseOpacity={0.14} baseRotation={i === 0 ? 2 : 0} blurStrength={5} wordAnimationEnd="bottom 68%">
               {p}
-            </p>
+            </ScrollReveal>
           ))}
         </div>
         <dl className="reveal mt-10 border-t border-ink" style={{ '--delay': '300ms' }}>

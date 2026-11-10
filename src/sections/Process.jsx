@@ -1,4 +1,5 @@
 import Lines from '../components/Lines'
+import ScrollReveal from '../bits/ScrollReveal'
 import { process } from '../constants'
 
 const NUMERALS = ['i', 'ii', 'iii']
@@ -20,7 +21,9 @@ const Process = () => (
               <span className="t-meta text-muted">Step {i + 1} of 3</span>
             </p>
             <Lines as="h3" lines={[title[0], [{ em: title[1] }]]} className="t-h2 mt-8" delay={80} />
-            <p className="reveal t-body mt-7 max-w-[30rem] text-muted" style={{ '--delay': '240ms' }}>{body}</p>
+            <div className="mt-7 max-w-[30rem] text-muted">
+              <ScrollReveal containerClassName="sr t-body" baseOpacity={0.14} baseRotation={0} blurStrength={5} wordAnimationEnd="bottom 68%">{body}</ScrollReveal>
+            </div>
           </div>
         </div>
       </article>

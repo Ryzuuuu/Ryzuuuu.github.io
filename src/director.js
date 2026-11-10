@@ -55,7 +55,7 @@ export const lockScroll = (locked) => {
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 const smooth = (t) => t * t * (3 - 2 * t)
 const read = (el, local) => ({ shot: el.dataset.shot, param: Number(el.dataset.param ?? 0), local })
-const TONE_COLOR = { light: '#f4f1ea', dark: '#0f1526' }
+const TONE_COLOR = { light: '#f8f1ed', dark: '#170a12' }
 // The opening shot's copy and console already sit apart, so nothing needs veiling.
 const scrimFor = (shot) => (shot === 'hero' ? 0 : 1)
 

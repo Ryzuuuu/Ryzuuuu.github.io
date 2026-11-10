@@ -1,6 +1,5 @@
-// The mark: a blue lotus seen from above (নীলাব্জ, Neelabja, means blue lotus), set in a
-// night-blue disc. Two rows of long, slender petals, offset by half a petal as on the real
-// flower, each a single flat colour with its tip curling gently aside, round a small golden heart.
+// The mark: a lotus seen from above (Neelabja means blue lotus), set in an aubergine disc. Two rows of long, slender petals, offset by half a petal as on the real
+// flower, each a single flat colour with its tip curling gently aside, round a small jade heart.
 //
 // This file is the single source of the drawing. drawMark() returns the SVG's inner markup; the
 // React component (Logo.jsx) and the exported files (scripts/build-brand.mjs) both use it, so
@@ -34,14 +33,14 @@ const SIZES = {
 }
 SIZES.compact = SIZES.full
 
-// One flat colour per row: deep neel behind, a paler blue in front.
+// One flat colour per row: deep lotus pink behind, a paler pink in front, round a jade heart.
 export const COLORWAYS = {
   jewel: {
-    disc: ['#1a2a6c', '#080c28'],
-    back: '#3f5fd8',
-    middle: '#a9c6ff',
-    heart: '#f4b83a',
-    gap: '#0b1240',
+    disc: ['#4a1238', '#16060f'],
+    back: '#ec3f8c',
+    middle: '#ffc4d8',
+    heart: '#7eebc4',
+    gap: '#1d0817',
   },
   mono: {
     disc: null,

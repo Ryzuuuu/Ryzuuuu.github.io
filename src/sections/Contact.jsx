@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Button from '../components/Button'
 import Lines from '../components/Lines'
+import ScrollReveal from '../bits/ScrollReveal'
 import { contact, profile } from '../constants'
 
 // The camera finds the antenna, which starts broadcasting; the copy sits to its right.
@@ -23,7 +24,9 @@ const Contact = () => {
         <div className="panel lg:col-span-5 lg:col-start-8">
           <p data-reveal className="reveal t-meta text-muted">Contact</p>
           <Lines id="contact-heading" lines={[['Say ', { em: 'hello.' }]]} className="t-display mt-5" delay={60} />
-          <p className="reveal t-lead mt-8 max-w-[30ch]" style={{ '--delay': '160ms' }}>{contact.body}</p>
+          <div className="mt-8 max-w-[30ch]">
+            <ScrollReveal containerClassName="sr t-lead" baseOpacity={0.14} baseRotation={2} blurStrength={5} wordAnimationEnd="bottom 68%">{contact.body}</ScrollReveal>
+          </div>
           <div className="reveal mt-10 border-t border-ink pt-5" style={{ '--delay': '260ms' }}>
             <a href={`mailto:${profile.email}`} className="group inline-flex flex-wrap items-baseline gap-x-3">
               <span className="t-h4 link text-[clamp(1.5rem,2.3vw,2.4rem)]">{profile.email}</span>

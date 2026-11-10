@@ -14,12 +14,12 @@ export default {
         muted: token('fg-muted'),
         line: token('rule'),
         accent: token('accent'),
+        spark: token('spark'),
       },
       fontFamily: {
-        serif: ['Newsreader', 'Georgia', 'serif'],
-        sans: ['Geist', 'system-ui', 'sans-serif'],
-        mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
-        bengali: ['"Tiro Bangla"', 'serif'],
+        serif: ['Fraunces', 'Georgia', 'serif'],
+        sans: ['"Instrument Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       }
     },
   },

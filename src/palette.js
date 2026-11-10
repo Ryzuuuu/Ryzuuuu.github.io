@@ -18,6 +18,9 @@ const toLinear = ([L, C, h]) => {
 
 const encode = (v) => (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)
 
+// The page's gradient, for the components that take plain hex: ember, lotus, orchid.
+export const GRADIENT = ['#ff8257', '#f24b96', '#cf6ce0']
+
 const cache = new Map()
 
 // Linear-light RGB triple (0–1) for a palette variable, e.g. linear('primary').

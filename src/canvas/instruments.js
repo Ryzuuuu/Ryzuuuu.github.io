@@ -11,9 +11,9 @@ export const W = 1024
 export const H = 694
 const M = 64
 
-const display = (px, weight = 500) => `${weight} ${px}px Geist, system-ui, sans-serif`
+const display = (px, weight = 500) => `${weight} ${px}px 'Instrument Sans', system-ui, sans-serif`
 // The screen is seen small, so the fine print is set larger than it looks like it should be.
-const small = (px, weight = 400) => `${weight} ${px}px 'Geist Mono', ui-monospace, monospace`
+const small = (px, weight = 400) => `${weight} ${px}px 'IBM Plex Mono', ui-monospace, monospace`
 export const FONTS = [display(64), small(20), small(20, 500)]
 
 const TAU = Math.PI * 2

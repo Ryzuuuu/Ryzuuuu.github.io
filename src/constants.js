@@ -8,7 +8,6 @@
 export const profile = {
   name: 'Neelabja Mukhopadhyay',
   first: 'Neelabja',
-  bengali: 'নীলাব্জ মুখোপাধ্যায়',
   email: 'neel.abja114@gmail.com',
   github: 'https://github.com/Ryzuuuu',
   githubUser: 'Ryzuuuu',
@@ -16,11 +15,6 @@ export const profile = {
 
 export const intro = {
   lede: 'I build things that have to make sense of a camera, a microphone or a sensor, and then keep working once they leave my laptop.',
-  // What's on the desk right now, for the card in the opening screen.
-  now: [
-    { org: 'FOSSEE', where: 'IIT Bombay', what: 'Building 3D bridge models for Osdag, an open-source structural design tool.' },
-    { org: 'Travarsa', what: 'Building AI agents, and the computer vision that lets them see.' },
-  ],
 }
 
 // The four chapters in the nav. Each is tied to a piece of the console: scrolling to the

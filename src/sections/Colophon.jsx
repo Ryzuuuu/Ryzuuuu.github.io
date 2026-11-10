@@ -60,7 +60,7 @@ const Colophon = () => (
       <div className="t-meta panel mt-9 flex flex-wrap items-center justify-between gap-x-8 gap-y-2 border-t border-line py-4 text-muted lg:mt-0">
         <span>© {new Date().getFullYear()} {profile.name}</span>
         <span className="hidden lg:inline">Drag the console to turn it</span>
-        <span className="hidden md:inline">Set in Newsreader &amp; Geist</span>
+        <span className="hidden md:inline">Set in Fraunces &amp; Instrument Sans</span>
         <a href="#home" className="group inline-flex items-center gap-2 text-ink">
           Back to top <span aria-hidden="true" className="arrow transition-transform group-hover:-translate-y-0.5">↑</span>
         </a>
