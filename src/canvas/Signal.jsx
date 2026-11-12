@@ -23,8 +23,8 @@ const Signal = ({ position }) => {
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.1)
-    const { chapter, hovered } = getSnapshot()
-    const on = hovered === 'contact' || chapter === 'contact' || chapter === 'end'
+    const { chapter, hovered, screen } = getSnapshot()
+    const on = screen !== 'process-1' && (hovered === 'contact' || chapter === 'contact' || chapter === 'end')
     const c = clock.current
 
     // Sending: the first pulse goes the moment it's switched on, then one every beat.

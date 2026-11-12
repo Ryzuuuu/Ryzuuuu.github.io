@@ -346,8 +346,13 @@
 
 /* ── Nav ──────────────────────────────────────────────────────────────────────── */
 .nav {
-  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease), backdrop-filter 0.5s;
+  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease), backdrop-filter 0.5s,
+    opacity 0.9s var(--ease) 0.45s, transform 1.1s var(--ease) 0.45s;
   border-bottom: 1px solid transparent;
+}
+:root[data-intro] .nav {
+  opacity: 0;
+  transform: translateY(-1.25rem);
 }
 :root[data-scrolled] .nav {
   background: color-mix(in oklch, var(--surface) 82%, transparent);
@@ -364,7 +369,7 @@
   align-items: center;
   gap: 0.125rem;
   padding: 0.25rem;
-  border-radius: 0.6rem;
+  border-radius: 999px;
   background: color-mix(in oklch, var(--surface-2) 70%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--rule) 80%, transparent);
   backdrop-filter: blur(10px);
@@ -379,7 +384,7 @@
   width: var(--pill-w, 0px);
   transform: translateX(var(--pill-x, 0px));
   opacity: var(--pill-o, 0);
-  border-radius: 0.4rem;
+  border-radius: 999px;
   background: var(--glow);
   box-shadow: 0 1px 2px color-mix(in oklch, var(--fg) 10%, transparent), 0 0 0 1px color-mix(in oklch, var(--rule) 70%, transparent);
   transition: transform 0.55s var(--ease), width 0.55s var(--ease), opacity 0.35s var(--ease);
@@ -388,7 +393,7 @@
   position: relative;
   display: block;
   padding: 0.5rem 1rem;
-  border-radius: 0.4rem;
+  border-radius: 999px;
   font-size: 0.9375rem;
   line-height: 1.2;
   color: var(--fg-muted);
@@ -439,104 +444,269 @@
 .menu-button[aria-expanded='true'] .menu-button__bars > span:last-child { transform: rotate(-45deg); }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────────────
-   Cut like a key on the console: a squared slab with a mono label and the arrow in its own cell
-   behind a hairline. The gradient, slowly sliding, on the night chapters; ink on paper. On hover a second colour wipes
-   across from the left and the arrow slips out and back in. `--ghost` is the outlined one. */
+   A pill with its arrow in a round chip. The night chapters get the sliding gradient; paper gets
+   ink with a lotus chip. On hover the chip's colour floods the whole pill from where it sits, the
+   label rolls up to a second copy of itself, and the arrow slips out and back in. `--ghost` is
+   see-through, with a thread of the gradient travelling round its edge. */
+@property --turn { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 :root {
   --cta: var(--ink-deep);
   --cta-fill: var(--ink-deep);
   --cta-fg: var(--paper);
-  --cta-wash: var(--brand);
-  --cta-on-wash: var(--paper);
+  --cta-on: var(--ink-deep);
+  --chip: var(--lotus);
+  --chip-fg: var(--ink-deep);
 }
 :root[data-tone='dark'] {
   --cta: var(--lotus);
   --cta-fill: linear-gradient(100deg, var(--ember), var(--lotus), var(--orchid), var(--lotus), var(--ember)) 0 0 / 300% 100%;
   --cta-fg: var(--ink-deep);
-  --cta-wash: var(--paper-raised);
-  --cta-on-wash: var(--ink-deep);
+  --chip: var(--paper-raised);
 }
 .btn {
+  --h: 3.5rem;
+  --pad: 0.4rem;
   position: relative;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
-  min-height: 3.25rem;
-  padding-left: 1.35rem;
-  border-radius: 0.45rem;
+  gap: 1.1rem;
+  height: var(--h);
+  padding: 0 var(--pad) 0 1.6rem;
+  border-radius: 999px;
   overflow: hidden;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
   white-space: nowrap;
   color: var(--cta-fg);
   background: var(--cta-fill);
   animation: btn-slide 9s linear infinite;
-  box-shadow: 0 14px 34px -16px color-mix(in oklch, var(--cta) 85%, transparent);
-  transition: color 0.45s var(--ease), background-color 0.6s var(--ease), box-shadow 0.5s var(--ease), transform 0.5s var(--ease);
+  box-shadow: 0 16px 38px -18px color-mix(in oklch, var(--cta) 90%, transparent), inset 0 1px 0 oklch(1 0 0 / 0.2);
+  transition: color 0.5s var(--ease), box-shadow 0.5s var(--ease), transform 0.5s var(--ease);
 }
+/* The chip's colour: a disc behind the arrow that grows until it covers the pill. */
 .btn::before {
   content: '';
   position: absolute;
-  inset: 0;
   z-index: -1;
-  background: var(--cta-wash);
-  transform: scaleX(0);
-  transform-origin: left;
+  right: var(--pad);
+  top: 50%;
+  width: calc(var(--h) - var(--pad) * 2);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--chip);
+  transform: translateY(-50%);
+  transition: transform 0.8s var(--ease);
+}
+.btn__label {
+  display: block;
+  height: 1.25em;
+  overflow: hidden;
+}
+.btn__label > span {
+  display: block;
   transition: transform 0.6s var(--ease);
 }
 .btn__icon {
   display: grid;
   place-items: center;
-  align-self: stretch;
-  width: 3.25rem;
-  margin-left: 1.2rem;
   flex: none;
+  width: calc(var(--h) - var(--pad) * 2);
+  aspect-ratio: 1;
+  border-radius: 50%;
   overflow: hidden;
-  border-left: 1px solid color-mix(in oklch, currentColor 24%, transparent);
-  font-family: 'Instrument Sans', system-ui, sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0;
+  color: var(--chip-fg);
 }
-/* The arrow leaves its cell the way it points and comes back in from the other side. */
+/* The arrow leaves the chip the way it points and comes back in from the other side. */
 .btn__glyph {
   display: block;
+  width: 1.0625rem;
+  height: 1.0625rem;
   --dx: 1;
   --dy: -1;
 }
-.btn__icon--s .btn__glyph { --dx: 0; --dy: 1; }
 @keyframes btn-slide {
   to { background-position: -150% 0; }
 }
 @keyframes btn-arrow {
   0% { transform: none; }
-  40% { transform: translate(calc(var(--dx) * 160%), calc(var(--dy) * 160%)); }
-  41% { transform: translate(calc(var(--dx) * -160%), calc(var(--dy) * -160%)); }
+  40% { transform: translate(calc(var(--dx) * 220%), calc(var(--dy) * 220%)); }
+  41% { transform: translate(calc(var(--dx) * -220%), calc(var(--dy) * -220%)); }
   100% { transform: none; }
 }
-.btn--sm { min-height: 2.5rem; padding-left: 1rem; font-size: 0.6875rem; }
-.btn--sm .btn__icon { width: 2.5rem; margin-left: 0.9rem; font-size: 0.875rem; }
+@keyframes btn-turn {
+  to { --turn: 360deg; }
+}
+.btn--sm {
+  --h: 2.75rem;
+  --pad: 0.3rem;
+  gap: 0.8rem;
+  padding-left: 1.15rem;
+  font-size: 0.8125rem;
+}
+.btn--sm .btn__glyph { width: 0.875rem; height: 0.875rem; }
 .btn--ghost {
-  --cta-wash: var(--fg);
-  --cta-on-wash: var(--surface);
-  color: var(--fg);
-  background: color-mix(in oklch, var(--surface) 35%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--fg) 30%, transparent);
+  --cta-fg: var(--fg);
+  --cta-on: var(--surface);
+  --chip: var(--fg);
+  --chip-fg: var(--surface);
+  background: color-mix(in oklch, var(--surface) 30%, transparent);
+  box-shadow: none;
+  animation: none;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.btn--plain { padding-inline: 1.35rem; }
-.btn--sm.btn--plain { padding-inline: 1rem; }
+.btn--ghost::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(from var(--turn),
+      color-mix(in oklch, var(--fg) 24%, transparent) 0 52%,
+      var(--ember), var(--lotus), var(--orchid),
+      color-mix(in oklch, var(--fg) 24%, transparent) 96%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: btn-turn 5s linear infinite;
+}
+/* Without an arrow there's no chip, so the flood starts from the middle. */
+.btn--plain { padding-inline: 1.6rem; }
+.btn--sm.btn--plain { padding-inline: 1.15rem; }
+.btn--plain::before {
+  right: 50%;
+  transform: translate(50%, -50%) scale(0);
+}
 .btn:active { transform: scale(0.97); }
 .btn:focus-visible { outline: 2px solid var(--spark); outline-offset: 3px; }
 @media (hover: hover) {
-  .btn:hover { color: var(--cta-on-wash); transform: translateY(-2px); }
-  .btn:hover::before { transform: none; }
-  .btn:hover .btn__glyph { animation: btn-arrow 0.65s var(--ease); }
+  .btn:hover { color: var(--cta-on); transform: translateY(-2px); }
+  .btn:hover::before { transform: translateY(-50%) scale(15); }
+  .btn--plain:hover::before { transform: translate(50%, -50%) scale(9); }
+  .btn:hover .btn__label > span { transform: translateY(-100%); }
+  .btn:hover .btn__glyph { animation: btn-arrow 0.7s var(--ease); }
 }
+
+/* ── The opening curtain ─────────────────────────────────────────────────────────
+   Covers the page while the console downloads: the lotus in the middle, a counter bottom left,
+   what the console is doing bottom right. When it's time, `--iris` runs out from where the console
+   stands: the veil is cut away inside that circle, and a ring of the gradient rides its edge. */
+@property --iris { syntax: '<length>'; inherits: true; initial-value: 0px; }
+.intro {
+  --iris: 0px;
+  --at: calc(var(--fx) * 100%) calc(var(--fy) * 100%);
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  color: var(--paper);
+}
+.intro.is-opening {
+  --iris: 175vmax;
+  pointer-events: none;
+  transition: --iris 1.7s cubic-bezier(0.72, 0, 0.18, 1);
+}
+.intro__veil {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--night);
+  -webkit-mask-image: radial-gradient(circle at var(--at), transparent calc(var(--iris) - 2.5vmax), #000 var(--iris));
+  mask-image: radial-gradient(circle at var(--at), transparent calc(var(--iris) - 2.5vmax), #000 var(--iris));
+}
+.intro__ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at var(--at),
+      transparent calc(var(--iris) - 3.4vmax),
+      color-mix(in oklch, var(--orchid) 70%, transparent) calc(var(--iris) - 2.2vmax),
+      var(--lotus) calc(var(--iris) - 1vmax),
+      var(--ember) var(--iris),
+      transparent calc(var(--iris) + 0.35vmax));
+}
+.is-opening .intro__ring {
+  opacity: 1;
+  transition: opacity 0.25s;
+}
+.intro__lamp {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(34% 38% at 50% 46%, oklch(0.4 0.17 352 / 0.6), transparent 72%),
+    radial-gradient(40% 36% at 12% 96%, oklch(0.66 0.23 2 / 0.22), transparent 70%),
+    radial-gradient(38% 34% at 92% 6%, oklch(0.74 0.17 38 / 0.16), transparent 70%);
+  animation: intro-breathe 5s ease-in-out infinite alternate;
+}
+@keyframes intro-breathe {
+  to { transform: scale(1.12) rotate(4deg); }
+}
+.intro__head,
+.intro__count,
+.intro__step,
+.intro__mark {
+  position: absolute;
+  transition: transform 0.7s var(--ease), opacity 0.5s var(--ease);
+}
+.intro__head {
+  inset: 1.5rem var(--gutter) auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--haze);
+  animation: fade-in 1s var(--ease) 0.2s both;
+}
+.intro__mark {
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+}
+.intro__mark .logo {
+  width: clamp(7.5rem, 17vw, 12.5rem);
+  height: clamp(7.5rem, 17vw, 12.5rem);
+  filter: drop-shadow(0 0 60px oklch(0.66 0.23 2 / 0.45));
+}
+.intro__count {
+  left: var(--gutter);
+  bottom: 1.6rem;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 340;
+  font-size: clamp(5.5rem, 16vw, 15rem);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  color: transparent;
+  background: linear-gradient(100deg, var(--ember), var(--lotus), var(--orchid));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.intro__step {
+  right: var(--gutter);
+  bottom: 1.9rem;
+  color: var(--haze);
+}
+.intro__bar {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: oklch(1 0 0 / 0.08);
+}
+.intro__bar > span {
+  display: block;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--ember), var(--lotus), var(--orchid));
+}
+.is-opening .intro__mark { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+.is-opening .intro__count,
+.is-opening .intro__step { transform: translateY(40%); opacity: 0; }
+.is-opening .intro__head { transform: translateY(-120%); opacity: 0; }
 
 /* ── The opening backdrop ───────────────────────────────────────────────────────
    Sits behind the console, so the island stands in front of it: an aurora in the lotus colours
@@ -592,6 +762,68 @@
     transform-origin: left center;
     filter: blur(calc(var(--hero, 0) * 10px));
   }
+}
+/* The console's operating notes. In the page's flow on small screens. On wide ones they're
+   pinned to the left, and `--run` (screens scrolled) fades them in once the opening copy has
+   gone, lifts them slowly, and fades them out before the first step reaches them. */
+.hero-note {
+  margin-top: 3rem;
+  max-width: 28rem;
+}
+.hero-note__lead {
+  margin-top: 1.1rem;
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 340;
+  font-size: clamp(2rem, 3.3vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  text-wrap: balance;
+}
+.hero-note__lead em { font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 1; }
+.hero-note__list {
+  margin-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+.hero-note__list li {
+  display: grid;
+  grid-template-columns: 2.25rem 4.25rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--rule);
+}
+.hero-note__chip {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  color: var(--ink-deep);
+  background: linear-gradient(135deg, var(--ember), var(--lotus), var(--orchid));
+}
+.hero-note__chip svg { width: 1rem; height: 1rem; }
+@media (min-width: 1024px) {
+  .hero-note {
+    --in: clamp(0, (var(--run, 0) - 0.5) * 5, 1);
+    --out: clamp(0, (1.28 - var(--run, 0)) * 5, 1);
+    position: fixed;
+    left: var(--gutter);
+    top: 22svh;
+    margin-top: 0;
+    pointer-events: none;
+    opacity: min(var(--in), var(--out));
+    transform: translate3d(0, calc((0.9 - var(--run, 0)) * 16svh), 0);
+    filter: blur(calc((1 - min(var(--in), var(--out))) * 10px));
+  }
+  /* The rows arrive one after another as the note comes in. */
+  .hero-note__list li {
+    opacity: clamp(0, (var(--run, 0) - 0.62 - var(--n) * 0.07) * 9, 1);
+    transform: translate3d(calc((1 - clamp(0, (var(--run, 0) - 0.62 - var(--n) * 0.07) * 9, 1)) * -1.5rem), 0, 0);
+  }
+  .hero-note__list li:nth-child(1) { --n: 0; }
+  .hero-note__list li:nth-child(2) { --n: 1; }
+  .hero-note__list li:nth-child(3) { --n: 2; }
 }
 /* A short rule between the two facts under the buttons, and the cue to scroll. */
 .hero-rule {
@@ -679,13 +911,13 @@
   padding-block: clamp(2rem, 8vh, 6rem);
   pointer-events: none;
 }
-.band .parallax { padding-block: 0.08em; }
+.band .parallax { padding-block: 0.1em 0.3em; margin-bottom: -0.2em; }
 .band .scroller {
   width: max-content;
   font-family: Fraunces, Georgia, serif;
   font-weight: 340;
   font-size: clamp(3.5rem, 11.5vw, 13rem);
-  line-height: 1.08;
+  line-height: 1.25;
   letter-spacing: -0.035em;
   font-variation-settings: 'opsz' 144, 'SOFT' 30;
   color: var(--fg);
@@ -816,9 +1048,43 @@
   .logo__layer, .logo__turn, .logo__sway { transform: none; animation: none; }
   .reveal, .line-mask > span, .draw { opacity: 1; transform: none; filter: none; transition: none; }
   .t-h2, .t-h3, .t-display, .plate, #home .panel, .hero-backdrop { transform: none; filter: none; opacity: 1; }
+  .hero-note, .hero-note__list li { position: static; transform: none; filter: none; opacity: 1; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── The gradient in the type ────────────────────────────────────────────────────
+   The italic half of every headline, and each project's headline figure, are set in the page's
+   gradient, which drifts slowly along the words. The padding keeps the italic's overhang inside
+   the clip. */
+.t-h2 em,
+.t-h3 em,
+.t-display:not(.t-display--hero) em,
+.figure-grad {
+  padding: 0 0.14em 0.12em 0.04em;
+  margin: 0 -0.14em -0.12em -0.04em;
+  color: transparent;
+  background: linear-gradient(100deg, var(--ember), var(--lotus), var(--orchid), var(--lotus), var(--ember)) 0 0 / 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: btn-slide 14s linear infinite;
+}
+/* On paper the gradient is deepened so it holds against the light ground. */
+:root:not([data-tone='dark']) :is(.t-h2 em, .t-h3 em, .t-display em, .figure-grad) {
+  background-image: linear-gradient(100deg, oklch(0.62 0.2 38), oklch(0.55 0.24 2), oklch(0.52 0.22 325), oklch(0.55 0.24 2), oklch(0.62 0.2 38));
+}
+
+/* Project index: the row you point at slides in and its title takes the gradient. */
+@media (hover: hover) {
+  .index .index-row:hover .t-h4 {
+    color: transparent;
+    background: linear-gradient(100deg, var(--ember), var(--lotus), var(--orchid));
+    -webkit-background-clip: text;
+    background-clip: text;
   }
 }

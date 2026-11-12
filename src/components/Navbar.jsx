@@ -110,7 +110,7 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden justify-end md:flex md:flex-1">
-            <Button href={`mailto:${profile.email}`} size="sm">Say hello</Button>
+            <Button href={`mailto:${profile.email}`} size="sm">Email me</Button>
           </div>
 
           <button
@@ -146,7 +146,7 @@ const Navbar = () => {
                 </li>
               ))}
             </ul>
-            <Button href={`mailto:${profile.email}`} className="self-start">Say hello</Button>
+            <Button href={`mailto:${profile.email}`} className="self-start">Email me</Button>
           </nav>
         </div>
       )}

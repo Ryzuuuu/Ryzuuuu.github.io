@@ -64,6 +64,8 @@ export const startDirector = () => {
   const meta = document.querySelector('meta[name="theme-color"]')
 
   lenis = reducedMotion ? null : new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, autoRaf: false })
+  // The page holds still behind the opening curtain; Intro lets it go.
+  if (root.hasAttribute('data-intro')) lenis?.stop()
 
   // In-page links glide instead of jumping.
   const onClick = (e) => {
@@ -138,6 +140,8 @@ export const startDirector = () => {
     const max = root.scrollHeight - vh
     root.style.setProperty('--progress', (max > 0 ? clamp01(y / max) : 0).toFixed(4))
     root.style.setProperty('--hero', clamp01(y / vh).toFixed(4))
+    // The same, but it keeps counting through the second screen, for what happens after the opening.
+    root.style.setProperty('--run', Math.min(2, y / vh).toFixed(4))
     root.toggleAttribute('data-scrolled', y > 24)
   }
 

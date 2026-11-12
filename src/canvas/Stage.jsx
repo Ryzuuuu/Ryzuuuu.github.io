@@ -2,7 +2,8 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, Lightformer, PerformanceMonitor, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
-import { director, goTo, setHovered } from '../director'
+import { director, getSnapshot, goTo, setHovered } from '../director'
+import { getOpening, reportOpening } from '../opening'
 import { rgb } from '../palette'
 import ExhibitLoader from '../components/ExhibitLoader'
 import CameraRig from './CameraRig'
@@ -19,9 +20,11 @@ const shadows = typeof window !== 'undefined' && !window.matchMedia('(pointer: c
 // like a photographer's, so its reflection on the plinth falls away from view.
 const FollowSpot = () => {
   const light = useRef()
-  useFrame(({ camera }) => {
+  useFrame(({ camera }, delta) => {
     const l = light.current
     if (!l) return
+    // The spot goes down with the console while it's in pieces, and comes back with it.
+    l.intensity = damp(l.intensity, getSnapshot().screen === 'process-1' ? 1.2 : 7, 3, Math.min(delta, 0.1))
     const dx = camera.position.x - focus.x
     const dz = camera.position.z - focus.z
     const len = Math.hypot(dx, dz) || 1
@@ -33,17 +36,24 @@ const FollowSpot = () => {
 }
 
 // The plinth and everything on it. It bobs gently, and leans into fast scrolls like
-// something with actual mass, then settles.
+// something with actual mass, then settles. It waits low, small and turned away until the
+// opening curtain starts to lift, then comes up into place like a turntable arriving.
 const Island = () => {
   const ref = useRef()
+  const rise = useRef(getOpening().raised ? 1 : 0)
+  const sway = useRef(0)
   useFrame(({ clock }, delta) => {
     const g = ref.current
     if (!g || reducedMotion) return
     const dt = Math.min(delta, 0.1)
     const lean = clamp(director.velocity, -40, 40)
-    g.position.y = Math.sin(clock.elapsedTime * 0.55) * 0.08 - Math.abs(lean) * 0.004
+    rise.current = damp(rise.current, getOpening().raised ? 1 : 0, 2.3, dt)
+    const away = 1 - rise.current
+    sway.current = damp(sway.current, lean * -0.003, 3, dt)
+    g.position.y = Math.sin(clock.elapsedTime * 0.55) * 0.08 - Math.abs(lean) * 0.004 - away * 2.6
     g.rotation.x = damp(g.rotation.x, lean * 0.0022, 4, dt)
-    g.rotation.y = damp(g.rotation.y, lean * -0.003, 3, dt)
+    g.rotation.y = sway.current - away * 2.2
+    g.scale.setScalar(1 - away * 0.2)
   })
   return (
     <group ref={ref}>
@@ -102,13 +112,17 @@ const Ready = ({ onReady }) => {
 
 const Progress = () => {
   const { progress, active } = useProgress()
+  useEffect(() => { reportOpening({ progress }) }, [progress])
   return <ExhibitLoader progress={progress} done={!active && progress >= 100} />
 }
 
 const Stage = () => {
   const [ready, setReady] = useState(false)
   const [dpr, setDpr] = useState(() => Math.min(1.5, window.devicePixelRatio || 1))
-  const onReady = useCallback(() => setReady(true), [])
+  const onReady = useCallback(() => {
+    setReady(true)
+    reportOpening({ ready: true, progress: 100 })
+  }, [])
 
   return (
     <>

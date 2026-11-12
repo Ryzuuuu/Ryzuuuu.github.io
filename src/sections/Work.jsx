@@ -33,7 +33,7 @@ const Entry = ({ project, index }) => {
           <p className="reveal t-body mt-5 text-muted" style={{ '--delay': '220ms' }}>{body}</p>
 
           <div className="reveal mt-8 flex items-baseline gap-5 border-t border-line pt-5" style={{ '--delay': '300ms' }}>
-            <span className="t-h3 shrink-0 text-accent">{figure.value}</span>
+            <span className="t-h3 figure-grad shrink-0">{figure.value}</span>
             <span className="t-small max-w-[16rem] text-muted">{figure.note}</span>
           </div>
 

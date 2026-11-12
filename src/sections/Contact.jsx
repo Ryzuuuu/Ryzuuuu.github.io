@@ -24,8 +24,8 @@ const Contact = () => {
         <div className="panel lg:col-span-5 lg:col-start-8">
           <p data-reveal className="reveal t-meta text-muted">Contact</p>
           <Lines id="contact-heading" lines={[['Say ', { em: 'hello.' }]]} className="t-display mt-5" delay={60} />
-          <div className="mt-8 max-w-[30ch]">
-            <ScrollReveal containerClassName="sr t-lead" baseOpacity={0.14} baseRotation={2} blurStrength={5} wordAnimationEnd="bottom 68%">{contact.body}</ScrollReveal>
+          <div className="mt-8">
+            <ScrollReveal containerClassName="sr t-lead max-w-[30ch]" baseOpacity={0.14} baseRotation={2} blurStrength={5} wordAnimationEnd="bottom 68%">{contact.body}</ScrollReveal>
           </div>
           <div className="reveal mt-10 border-t border-ink pt-5" style={{ '--delay': '260ms' }}>
             <a href={`mailto:${profile.email}`} className="group inline-flex flex-wrap items-baseline gap-x-3">
@@ -33,10 +33,10 @@ const Contact = () => {
               <span aria-hidden="true" className="arrow arrow-ne text-muted">↗</span>
             </a>
             <div className="mt-6 flex flex-wrap gap-2.5">
-              <Button as="button" type="button" onClick={copyEmail} ghost size="sm" dir={null}>
-                <span aria-live="polite">{copied ? 'Copied ✓' : 'Copy address'}</span>
+              <Button as="button" type="button" onClick={copyEmail} ghost size="sm" icon={copied ? 'check' : 'copy'}>
+                <span aria-live="polite">{copied ? 'Copied to clipboard' : 'Copy my email'}</span>
               </Button>
-              <Button href={profile.github} target="_blank" rel="noreferrer" ghost size="sm">GitHub</Button>
+              <Button href={profile.github} target="_blank" rel="noreferrer" ghost size="sm" icon="code">Open my GitHub</Button>
             </div>
           </div>
         </div>

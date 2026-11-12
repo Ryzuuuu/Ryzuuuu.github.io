@@ -16,11 +16,11 @@ const SHOTS = {
     mobile: { dist: 25, fy: 0.3 },
   }),
   // The three process steps share one continuous orbit: each step picks up where the last
-  // left off, so scrolling through "how I work" walks you most of the way around the island.
+  // left off, so scrolling through "how I work" walks you twice around the island, and brings the screen round to face you in the middle of step two, when it has something to say.
   process: (step, local) => {
     const t = (step + local) / 3
     return {
-      target: [0, 1.0 + Math.sin(t * Math.PI) * 0.9, -0.4], az: 30 + t * 330, el: 16 + Math.sin(t * Math.PI) * 16, dist: 16.5 + Math.sin(t * Math.PI) * 2,
+      target: [0, 1.0 + Math.sin(t * Math.PI) * 0.9, -0.4], az: 30 + t * 690, el: 16 + Math.sin(t * Math.PI) * 16, dist: 16.5 + Math.sin(t * Math.PI) * 2,
       fx: 0.68, fy: 0.52,
       mobile: { dist: 24, fy: 0.3 },
     }
@@ -54,22 +54,6 @@ const SHOTS = {
     mobile: { dist: 27, fy: 0.3 },
   }),
 }
-
-// What the monitor is running, shown beside the console. Keyed by screen first and shot
-// second; each project's line lives with the project in constants.js.
-const CAPTIONS = {
-  hero: { text: 'A box that follows your pointer' },
-  'process-0': { text: 'A first run, and a lot of print statements' },
-  'process-1': { text: 'A noisy signal, and the same one calmed down' },
-  'process-2': { text: 'Ready' },
-  about: { text: 'Twenty-one points on a hand' },
-  toolbox: { text: 'The same list, stepping through' },
-  work: { text: 'Choose a cartridge' },
-  archive: { text: 'The smaller things' },
-  contact: { text: 'Line open' },
-}
-
-export const captionFor = (screen, shot) => CAPTIONS[screen] ?? CAPTIONS[shot]
 
 export const resolveShot = (name, param = 0, local = 0, split = true) => {
   const shot = (SHOTS[name] ?? SHOTS.hero)(param, local)

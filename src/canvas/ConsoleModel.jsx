@@ -651,12 +651,16 @@ const ConsoleModel = ({ onSelect }) => {
     const s = state.current
     const t = clock.elapsedTime
     const dt = Math.min(delta, 0.1)
-    const { chapter, screen, hovered } = getSnapshot()
+    const snap = getSnapshot()
+    const { chapter, screen } = snap
+    // In pieces, the console is dead: nothing answers the pointer, nothing glows, nothing spins.
+    const dead = screen === SHATTER_ON
+    const hovered = dead ? null : snap.hovered
 
     // Screen powers on shortly after load; MonitorScreen handles the flicker.
     s.boot = Math.min(1, s.boot + dt * 0.9)
     powered.current = s.boot > 0.6
-    const wash = powered.current ? 0.05 + (hovered === 'about' ? 0.12 : 0) : 0
+    const wash = powered.current && !dead ? 0.05 + (hovered === 'about' ? 0.12 : 0) : 0
     for (const m of glass) m.emissiveIntensity = damp(m.emissiveIntensity, wash, 8, dt)
 
     // Wireframe → finished. Swap the look and send the scanner ring up the console.
@@ -676,7 +680,7 @@ const ConsoleModel = ({ onSelect }) => {
     s.split = apart ? Math.min(1, s.split + dt * 0.8) : Math.max(0, s.split - dt * 0.95)
     if (was > 0 && s.split === 0) s.scan = 0
     shatter.update(s.split, t)
-    dust.update(s.split, t)
+    dust.update(dead ? 0 : s.split, t)
     if (screenRig.current) screenRig.current.position.copy(shatter.glassOffset)
 
     s.scan = Math.min(1, s.scan + dt * 1.5)
@@ -730,7 +734,7 @@ const ConsoleModel = ({ onSelect }) => {
     // The ears hunt for a signal while pointed at, and search more gently through Contact.
     if (ears) ears.update(reducedMotion ? 0 : Math.max(over.contact, chapter === 'contact' ? 0.35 : 0), t)
 
-    if (clip) clip.timeScale = damp(clip.timeScale, hovered === 'toolbox' && !reducedMotion ? 3 : chapter === 'toolbox' ? 1.4 : 0.2, 3, dt)
+    if (clip) clip.timeScale = damp(clip.timeScale, dead ? 0 : hovered === 'toolbox' && !reducedMotion ? 3 : chapter === 'toolbox' ? 1.4 : 0.2, 3, dt)
 
     // Each new work reseats the cartridge: it lifts out of the bay and drops back in.
     if (screen !== s.screen) {
@@ -746,10 +750,16 @@ const ConsoleModel = ({ onSelect }) => {
   })
 
   const handlers = (id) => ({
-    onPointerOver: (e) => { e.stopPropagation(); setHovered(id); document.body.style.cursor = 'pointer' },
+    onPointerOver: (e) => {
+      e.stopPropagation()
+      if (getSnapshot().screen === SHATTER_ON) return
+      setHovered(id)
+      document.body.style.cursor = 'pointer'
+    },
     onPointerOut: () => { setHovered(null); document.body.style.cursor = '' },
     onPointerDown: (e) => {
       e.stopPropagation()
+      if (getSnapshot().screen === SHATTER_ON) return
       state.current.press = { id, x: e.nativeEvent.clientX, y: e.nativeEvent.clientY }
     },
   })

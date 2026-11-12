@@ -34,7 +34,7 @@ export const process = [
   },
   {
     title: ['Then try', 'to break it.'],
-    body: 'When I properly tested Fasal Sahaayak’s fertilizer model, it scored 14%, about what you’d get by guessing. A weather bug had also convinced another model that monsoon rice gets 38 mm of rain. It’s closer to 1,350. I took the fertilizer model out and wrote rules with a source behind every dose. Slightly embarrassing, very useful.',
+    body: 'When I properly tested Fasal Sahaayak’s fertilizer model, it scored 14%, about what you’d get by guessing. A weather bug had also convinced another model that monsoon rice gets 38 mm of rain. It’s closer to 1,350. I took the fertilizer model out and wrote rules with a source behind every dose. Slightly embarrassing, very useful. (The console agrees. Check its screen.)',
   },
   {
     title: ['Then, finally,', 'make it nice.'],

@@ -490,27 +490,27 @@ export const makeInstruments = (ctx, ink) => {
       if (Math.floor(t * 2) % 2 === 0) rect(M, 124 + shown.length * 39, 14, 24)
     },
 
-    // The smoothing is TriSense's: an EMA at alpha 0.6, which lets the real input through.
-    'process-1': (t) => {
-      chrome('INPUT', 'BUILD 0.9', 'EMA  α = 0.6')
-      const raw = []
-      const ema = []
-      let e = 0
-      const A = 0.6
-      const span = W - M * 2
-      for (let x = 0; x <= span; x += 6) {
-        const u = x * 0.012 + t * 1.3
-        const signal = Math.sin(u) * 86 + Math.sin(u * 0.37) * 34
-        const noise = Math.sin(u * 37.7) * 30 + Math.sin(u * 91.3) * 22 + (Math.sin(u * 5.1) > 0.93 ? 96 : 0)
-        const v = signal + noise
-        e = x === 0 ? v : A * e + (1 - A) * v
-        raw.push([M + x, 200 + v * 0.62])
-        ema.push([M + x, 432 + e * 0.75])
-      }
-      text('RAW', M, 118, { font: small(15), color: ink.soft, spacing: 1 })
-      line(raw, { color: ink.soft, width: 2 })
-      text('SMOOTHED', M, 340, { font: small(15), color: ink.soft, spacing: 1 })
-      line(ema, { width: 3 })
+    // The console is in pieces at this step, so the tube gives up on phosphor and shows a proper
+    // red crash screen. It's the one screen that isn't drawn in the tube's own colours.
+    'process-1': () => {
+      const paper = '#fff1ee'
+      const pale = 'rgba(255, 241, 238, 0.72)'
+      rect(0, 0, W, H, '#c1121f')
+      rect(0, 0, W, 104, '#8d0b16')
+      text('FATAL ERROR', M, 70, { font: small(30, 500), color: paper, spacing: 3 })
+      text('0x0000001B', W - M, 70, { font: small(24), color: pale, align: 'right', spacing: 1 })
+      text(':(', M, 262, { font: display(150), color: paper })
+      text('This console ran into a developer', M + 210, 196, { font: display(40), color: paper, spacing: -0.5 })
+      text('and needs to be put back together.', M + 210, 250, { font: display(40), color: paper, spacing: -0.5 })
+      const LOG = [
+        'HardwareError: expected 1 console, found a pile',
+        'lights off.  fan off.  antenna off.  dignity off.',
+        'cause: someone wanted to see what was inside',
+      ]
+      LOG.forEach((l, i) => text(l, M, 352 + i * 44, { font: small(24), color: i ? pale : paper }))
+      rect(M, 500, W - M * 2, 2, 'rgba(255, 241, 238, 0.35)')
+      text('“It worked on my plinth.”', M, 566, { font: display(46), color: paper, spacing: -0.5 })
+      text('Keep scrolling to reassemble.', M, 630, { font: small(22), color: pale, spacing: 1 })
     },
 
     'process-2': (t) => {
@@ -604,4 +604,4 @@ export const makeInstruments = (ctx, ink) => {
 }
 
 // The screens that never change between frames, and so never need repainting.
-export const isStatic = (screen) => screen === 'archive' || screen === 'colophon'
+export const isStatic = (screen) => screen === 'archive' || screen === 'colophon' || screen === 'process-1'

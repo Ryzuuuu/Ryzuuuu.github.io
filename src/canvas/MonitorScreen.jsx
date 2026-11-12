@@ -123,7 +123,10 @@ const MonitorScreen = ({ position, size, powered }) => {
 
     // Channel change: the picture collapses to a line, swaps, and opens back up.
     const { screen, hovered } = getSnapshot()
-    s.hover = THREE.MathUtils.damp(s.hover, hovered === 'about' && !reducedMotion ? 1 : 0, 6, Math.min(delta, 0.1))
+    // While the console is in pieces the tube runs on whatever charge is left: a little dim, and no sweep.
+    const dead = s.shown === 'process-1'
+    s.dim = THREE.MathUtils.damp(s.dim ?? 1, dead ? 0.8 : 1, 4, Math.min(delta, 0.1))
+    s.hover = THREE.MathUtils.damp(s.hover, hovered === 'about' && !dead && !reducedMotion ? 1 : 0, 6, Math.min(delta, 0.1))
     if (sweep.current) {
       // Hovering the monitor sends a refresh line rolling down the tube.
       const y = (0.5 - ((t * 0.62) % 1)) * size[1]
@@ -146,7 +149,7 @@ const MonitorScreen = ({ position, size, powered }) => {
     if (mesh.current) mesh.current.scale.y = Math.max(0.012, squash)
 
     const flicker = elapsed < 0.5 ? (Math.random() > 0.4 ? 1 : 0.25) : 1
-    mat.current?.color.setScalar(flicker * (0.65 + 0.35 * squash) + (1 - squash) * 0.6 + s.hover * 0.28)
+    mat.current?.color.setScalar((flicker * (0.65 + 0.35 * squash) + (1 - squash) * 0.6 + s.hover * 0.28) * s.dim)
 
     // The tracker lags a little behind the pointer; with no pointer (phones), it hunts.
     pointer.dwell += delta

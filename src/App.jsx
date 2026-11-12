@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import Band from './components/Band'
-import ExhibitCaption from './components/ExhibitCaption'
+import Intro from './components/Intro'
 import ExhibitLoader from './components/ExhibitLoader'
 import SceneBoundary from './components/SceneBoundary'
 import Hero from './sections/Hero'
@@ -13,6 +13,7 @@ import Contact from './sections/Contact'
 import Colophon from './sections/Colophon'
 import { startDirector } from './director'
 import { useReveal } from './hooks/useReveal'
+import { reportOpening } from './opening'
 import Aurora from './bits/Aurora'
 import { GRADIENT } from './palette'
 
@@ -27,6 +28,9 @@ const hasWebGL = (() => {
     return false
   }
 })()
+
+// With no console to wait for, the curtain only keeps its own time.
+if (!hasWebGL) reportOpening({ ready: true, progress: 100 })
 
 // The aurora is a second WebGL canvas, so it's only mounted where the opening backdrop shows.
 const wide = window.matchMedia('(min-width: 1024px)').matches
@@ -53,7 +57,7 @@ const App = () => {
       {wide && (
         <div aria-hidden="true" className="hero-backdrop hidden lg:block">
           <div className="hero-backdrop__aurora">
-            <Aurora colorStops={[GRADIENT[2], GRADIENT[1], GRADIENT[0]]} amplitude={1.3} blend={0.65} speed={0.7} height={0.6} layers={2} glow={0.55} brightness={0.95} mouseInteraction={false} />
+            <Aurora colorStops={[GRADIENT[2], GRADIENT[1], GRADIENT[0]]} amplitude={1.3} blend={0.7} speed={0.7} height={0.5} layers={2} glow={0.5} brightness={0.9} opacity={0.4} mouseInteraction={false} />
           </div>
           <div className="hero-backdrop__grid" />
         </div>
@@ -85,8 +89,8 @@ const App = () => {
         <Contact />
       </main>
       <Colophon />
-      <ExhibitCaption />
 
+      <Intro />
       <div aria-hidden="true" className="grain pointer-events-none fixed inset-0 z-[60]" />
     </>
   )

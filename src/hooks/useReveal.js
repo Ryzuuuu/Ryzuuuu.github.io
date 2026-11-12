@@ -5,11 +5,21 @@ import { useEffect } from 'react'
 export const useReveal = () => {
   useEffect(() => {
     const els = document.querySelectorAll('.reveal, [data-reveal]')
-    // The opening screen is on show from the start, whatever part of the viewport it fills.
-    document.querySelectorAll('#home .reveal, #home [data-reveal]').forEach((el) => el.classList.add('is-visible'))
+    // The opening screen comes on as the curtain clears it, whatever part of the viewport it fills.
+    let timer = 0
+    const showHome = () => {
+      document.querySelectorAll('#home .reveal, #home [data-reveal]').forEach((el) => el.classList.add('is-visible'))
+    }
+    const onOpen = () => { timer = setTimeout(showHome, 520) }
+    if (document.documentElement.hasAttribute('data-intro')) window.addEventListener('intro:open', onOpen, { once: true })
+    else showHome()
+    const stop = () => {
+      clearTimeout(timer)
+      window.removeEventListener('intro:open', onOpen)
+    }
     if (!('IntersectionObserver' in window)) {
       els.forEach((el) => el.classList.add('is-visible'))
-      return
+      return stop
     }
     const io = new IntersectionObserver(
       (entries) => {
@@ -21,7 +31,11 @@ export const useReveal = () => {
       },
       { rootMargin: '0px 0px -12% 0px', threshold: 0.12 },
     )
-    els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    // The opening screen's own elements are left to showHome.
+    els.forEach((el) => { if (!el.closest('#home')) io.observe(el) })
+    return () => {
+      io.disconnect()
+      stop()
+    }
   }, [])
 }
